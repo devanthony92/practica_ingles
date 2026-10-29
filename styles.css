@@ -1,5 +1,6 @@
 /* ==========================================================================
    LEXIQUEST 2000 — DISEÑO TÁCTIL 3D, 6 LIGAS Y ESTUDIO POR NIVELES CON AUDIO
+   Optimizado para Escritorio, Tablet (Horizontal y Vertical) y Móvil
    ========================================================================== */
 
 :root {
@@ -65,6 +66,13 @@
   padding: 0;
 }
 
+html,
+body {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
 body {
   font-family: var(--font-body);
   background-color: var(--bg-main);
@@ -72,7 +80,6 @@ body {
   background-size: 26px 26px;
   color: var(--text-main);
   min-height: 100vh;
-  overflow-x: hidden;
   user-select: none;
 }
 
@@ -87,12 +94,13 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 0.75rem 1.75rem;
-  background: rgba(255, 255, 255, 0.94);
+  gap: 0.85rem;
+  padding: 0.7rem 1.5rem;
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(12px);
   border-bottom: 3px solid var(--border-color);
 }
@@ -100,23 +108,25 @@ body {
 .hud-brand {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.6rem;
   cursor: pointer;
+  flex-shrink: 0;
   transition: transform 0.2s var(--transition-bounce);
 }
 .hud-brand:hover {
-  transform: scale(1.04);
+  transform: scale(1.03);
 }
 
 .brand-logo {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
   background: linear-gradient(135deg, var(--bronze), var(--gold));
   box-shadow: 0 4px 0 var(--bronze-dark);
   display: grid;
   place-items: center;
-  font-size: 1.5rem;
+  font-size: 1.45rem;
+  flex-shrink: 0;
 }
 
 .brand-text {
@@ -126,7 +136,7 @@ body {
 
 .brand-title {
   font-family: var(--font-display);
-  font-size: 1.4rem;
+  font-size: 1.35rem;
   font-weight: 700;
   letter-spacing: -0.5px;
   background: linear-gradient(90deg, var(--bronze-dark), var(--sapphire-dark));
@@ -135,7 +145,7 @@ body {
 }
 
 .brand-badge {
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   font-weight: 900;
   color: var(--gold-dark);
   background: var(--gold-soft);
@@ -148,13 +158,13 @@ body {
 .hud-xp-card {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.65rem;
   background: var(--surface-soft);
   border: 2px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: 0.4rem 0.9rem;
-  min-width: 270px;
-  max-width: 360px;
+  padding: 0.38rem 0.85rem;
+  min-width: 200px;
+  max-width: 350px;
   flex: 1;
 }
 
@@ -163,15 +173,17 @@ body {
   color: #fff;
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 0.95rem;
-  padding: 0.35rem 0.7rem;
-  border-radius: 12px;
+  font-size: 0.9rem;
+  padding: 0.32rem 0.65rem;
+  border-radius: 11px;
   box-shadow: 0 3px 0 var(--gold-dark);
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .xp-bar-wrapper {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -180,18 +192,22 @@ body {
 .xp-bar-labels {
   display: flex;
   justify-content: space-between;
-  font-size: 0.78rem;
+  gap: 0.4rem;
+  font-size: 0.75rem;
   font-weight: 800;
   color: var(--text-muted);
+  white-space: nowrap;
 }
 
 .xp-next-hint {
   color: var(--sapphire);
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .progress-track {
   width: 100%;
-  height: 12px;
+  height: 11px;
   background: #e2e8f0;
   border-radius: 99px;
   overflow: hidden;
@@ -225,18 +241,20 @@ body {
 .hud-stats {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.55rem;
+  flex-shrink: 0;
 }
 
 .stat-pill {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
-  padding: 0.38rem 0.8rem;
-  border-radius: 14px;
+  gap: 0.4rem;
+  padding: 0.36rem 0.7rem;
+  border-radius: 13px;
   border: 2px solid var(--border-color);
   background: var(--surface);
   box-shadow: 0 3px 0 var(--border-shadow);
+  white-space: nowrap;
   transition: transform 0.2s var(--transition-bounce);
 }
 .stat-pill:hover {
@@ -256,7 +274,7 @@ body {
 }
 
 .streak-icon {
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   display: inline-block;
   animation: flamePulse 1.6s infinite ease-in-out;
 }
@@ -274,26 +292,27 @@ body {
 
 .stat-value {
   font-family: var(--font-display);
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--text-main);
 }
 
 .stat-label {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 800;
   color: var(--text-muted);
 }
 
 .btn-icon-3d {
-  width: 42px;
-  height: 42px;
-  border-radius: 13px;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
   border: 2px solid var(--border-color);
   background: var(--surface);
   box-shadow: 0 3px 0 var(--border-shadow);
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   cursor: pointer;
+  flex-shrink: 0;
   transition: all 0.15s ease;
 }
 .btn-icon-3d:active {
@@ -304,9 +323,9 @@ body {
 .user-profile-btn {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
-  padding: 0.35rem 0.85rem;
-  border-radius: 14px;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 13px;
   border: 2px solid var(--sapphire);
   background: var(--sapphire-soft);
   box-shadow: 0 3px 0 var(--sapphire);
@@ -314,11 +333,13 @@ body {
   font-weight: 600;
   color: var(--sapphire-dark);
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
   transition: transform 0.15s ease;
 }
 
 /* ==========================================================================
-   2. LAYOUT PRINCIPAL SPA (SIDEBAR + ÁREA CENTRAL)
+   2. LAYOUT PRINCIPAL SPA (ESCRITORIO)
    ========================================================================== */
 .app-layout {
   width: 100%;
@@ -352,13 +373,13 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.9rem;
+  margin-bottom: 0.85rem;
   gap: 0.5rem;
 }
 
 .panel-header h2 {
   font-family: var(--font-display);
-  font-size: 1.12rem;
+  font-size: 1.1rem;
   color: var(--text-main);
 }
 
@@ -371,23 +392,24 @@ body {
   background: var(--surface-soft);
   border: 1.5px solid var(--border-color);
   color: var(--text-muted);
+  white-space: nowrap;
 }
 
 /* ==========================================================================
-   3. SECCIÓN DE LAS 6 LIGAS (SOLO LIGA Y PALABRAS APRENDIDAS)
+   3. SECCIÓN DE LAS 6 LIGAS
    ========================================================================== */
 .league-list {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 0.6rem;
 }
 
 .league-btn {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.7rem;
   width: 100%;
-  padding: 0.75rem 0.9rem;
+  padding: 0.7rem 0.85rem;
   border-radius: var(--radius-lg);
   border: 2px solid var(--border-color);
   background: var(--surface-soft);
@@ -443,13 +465,13 @@ body {
 }
 
 .league-gem {
-  width: 42px;
-  height: 42px;
-  border-radius: 13px;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
   background: var(--surface);
   display: grid;
   place-items: center;
-  font-size: 1.45rem;
+  font-size: 1.4rem;
   flex-shrink: 0;
   box-shadow: 0 2px 0 rgba(0, 0, 0, 0.06);
 }
@@ -458,31 +480,39 @@ body {
   display: flex;
   flex-direction: column;
   flex: 1;
+  min-width: 0;
 }
 
 .league-name {
   font-family: var(--font-display);
-  font-size: 1rem;
+  font-size: 0.96rem;
   font-weight: 700;
   color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .league-desc {
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 700;
   color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .league-progress {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 0.82rem;
-  padding: 4px 10px;
+  font-size: 0.8rem;
+  padding: 4px 9px;
   border-radius: 99px;
   background: rgba(255, 255, 255, 0.92);
   color: var(--text-main);
   border: 1.5px solid rgba(0, 0, 0, 0.06);
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* Misiones Diarias */
@@ -575,7 +605,7 @@ body {
 }
 
 /* ==========================================================================
-   4. CUADRO TÁCTIL DE ESTUDIO POR NIVELES (PARTE SUPERIOR CENTRAL)
+   4. CUADRO TÁCTIL DE ESTUDIO POR NIVELES
    ========================================================================== */
 .main-stage {
   display: flex;
@@ -598,39 +628,40 @@ body {
 .study-panel-header {
   margin-bottom: 0;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 0.65rem;
 }
 
 .study-header-left {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.6rem;
 }
 
 .study-header-actions {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.45rem;
   flex-wrap: wrap;
 }
 
 .level-indicator-pill {
   font-family: var(--font-display);
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   font-weight: 700;
-  padding: 0.42rem 0.9rem;
+  padding: 0.4rem 0.85rem;
   border-radius: 12px;
   background: var(--surface-soft);
   border: 2px solid var(--border-color);
   color: var(--text-main);
+  white-space: nowrap;
 }
 
-/* Tira horizontal de Botones Táctiles de Niveles (1, 2, 3...) */
+/* Tira horizontal de Botones Táctiles de Niveles */
 .levels-strip-wrapper {
   background: var(--surface-soft);
   border: 2px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: 0.6rem;
+  padding: 0.55rem;
   width: 100%;
   max-width: 100%;
   overflow: hidden;
@@ -638,9 +669,10 @@ body {
 
 .levels-strip {
   display: flex;
-  gap: 0.55rem;
+  flex-direction: row;
+  gap: 0.5rem;
   overflow-x: auto;
-  padding-bottom: 6px;
+  padding-bottom: 5px;
   scrollbar-width: thin;
   width: 100%;
 }
@@ -649,13 +681,13 @@ body {
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  padding: 0.5rem 0.85rem;
-  border-radius: 14px;
+  padding: 0.46rem 0.8rem;
+  border-radius: 13px;
   border: 2px solid var(--border-color);
   background: var(--surface);
   box-shadow: 0 4px 0 var(--border-shadow);
   font-family: var(--font-display);
-  font-size: 0.86rem;
+  font-size: 0.84rem;
   font-weight: 700;
   color: var(--text-main);
   cursor: pointer;
@@ -699,7 +731,7 @@ body {
 .study-words-body {
   display: flex;
   flex-direction: column;
-  gap: 0.7rem;
+  gap: 0.65rem;
   min-width: 0;
   width: 100%;
   overflow: hidden;
@@ -718,7 +750,7 @@ body {
 
 .study-group-progress-badge {
   font-family: var(--font-display);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 700;
   color: var(--emerald-dark);
   background: var(--emerald-soft);
@@ -726,10 +758,11 @@ body {
   border-radius: 99px;
 }
 
-/* Carrusel Táctil Horizontal de las 10 Palabras (Compacto y contenido al 100%) */
+/* Carrusel Táctil Horizontal de las 10 Palabras */
 .study-cards-grid {
   display: flex;
-  gap: 0.85rem;
+  flex-direction: row;
+  gap: 0.8rem;
   overflow-x: auto;
   padding: 4px 2px 10px;
   scrollbar-width: thin;
@@ -737,8 +770,8 @@ body {
 }
 
 .study-word-card {
-  width: 280px;
-  min-width: 280px;
+  width: 275px;
+  min-width: 275px;
   flex-shrink: 0;
   background: var(--surface-soft);
   border: 2px solid var(--border-color);
@@ -770,45 +803,49 @@ body {
 .study-card-top {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.6rem;
 }
 
 .study-word-icon {
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   border-radius: 12px;
   background: var(--surface);
   border: 1.5px solid var(--border-color);
   display: grid;
   place-items: center;
-  font-size: 1.35rem;
+  font-size: 1.3rem;
   flex-shrink: 0;
 }
 
 .study-word-info {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
 }
 
 .study-word-en {
   font-family: var(--font-display);
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--text-main);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
 
 .study-word-es {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 800;
   color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .study-word-phonetic {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 800;
   color: var(--diamond-dark);
 }
@@ -817,17 +854,18 @@ body {
   display: flex;
   align-items: center;
   gap: 0.35rem;
+  flex-shrink: 0;
 }
 
 .btn-speak-main {
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   border-radius: 10px;
   border: 2px solid var(--sapphire);
   background: var(--sapphire);
   box-shadow: 0 3px 0 var(--sapphire-dark);
   color: #fff;
-  font-size: 1rem;
+  font-size: 0.95rem;
   cursor: pointer;
   display: grid;
   place-items: center;
@@ -839,13 +877,13 @@ body {
 }
 
 .btn-practice-word {
-  padding: 0.35rem 0.6rem;
+  padding: 0.35rem 0.55rem;
   border-radius: 10px;
   border: 2px solid var(--border-color);
   background: var(--surface);
   box-shadow: 0 3px 0 var(--border-shadow);
   font-family: var(--font-display);
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 700;
   color: var(--text-main);
   cursor: pointer;
@@ -854,25 +892,26 @@ body {
   transform: translateY(2px);
 }
 
-/* Botones Táctiles de los 4 Tiempos Verbales (Con Pronunciación Individual) */
+/* Botones Táctiles de los 4 Tiempos Verbales */
 .study-tenses-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.45rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.4rem;
 }
 
 .tense-audio-btn {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.35rem;
-  padding: 0.42rem 0.6rem;
+  gap: 0.3rem;
+  padding: 0.4rem 0.55rem;
   border-radius: 11px;
   border: 1.5px solid var(--border-color);
   background: var(--surface);
   box-shadow: 0 3px 0 var(--border-shadow);
   cursor: pointer;
   text-align: left;
+  min-width: 0;
   transition: all 0.14s ease;
 }
 
@@ -893,10 +932,11 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-width: 0;
 }
 
 .tense-btn-kind {
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   font-weight: 900;
   text-transform: uppercase;
   color: var(--text-muted);
@@ -904,7 +944,7 @@ body {
 
 .tense-btn-val {
   font-family: var(--font-display);
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: var(--text-main);
   white-space: nowrap;
@@ -913,22 +953,22 @@ body {
 }
 
 .tense-btn-speaker {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   color: var(--sapphire-dark);
   flex-shrink: 0;
 }
 
 /* ==========================================================================
-   5. ARENA DE PRÁCTICA Y EJERCICIOS (CON AUDIO EN CADA TIEMPO VERBAL)
+   5. ARENA DE PRÁCTICA Y EJERCICIOS
    ========================================================================== */
 .arena-toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 0.6rem;
   background: var(--surface);
-  padding: 0.7rem 1rem;
+  padding: 0.65rem 0.95rem;
   border-radius: var(--radius-lg);
   border: 2px solid var(--border-color);
   box-shadow: 0 4px 0 var(--border-shadow);
@@ -937,19 +977,20 @@ body {
 .mode-pills {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.45rem;
 }
 
 .mode-pill {
-  padding: 0.42rem 0.85rem;
+  padding: 0.4rem 0.8rem;
   border-radius: 12px;
   border: 2px solid var(--border-color);
   background: var(--surface-soft);
   font-family: var(--font-display);
-  font-size: 0.85rem;
+  font-size: 0.83rem;
   font-weight: 600;
   color: var(--text-muted);
   cursor: pointer;
+  white-space: nowrap;
   transition: all 0.2s ease;
 }
 
@@ -962,27 +1003,28 @@ body {
 .combo-badge {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.35rem 0.85rem;
+  gap: 0.35rem;
+  padding: 0.35rem 0.8rem;
   border-radius: 99px;
   background: var(--gold-soft);
   border: 2px solid var(--gold);
   color: var(--gold-dark);
   font-family: var(--font-display);
-  font-size: 0.82rem;
+  font-size: 0.8rem;
+  white-space: nowrap;
 }
 
 /* Barra de Progreso de la Sesión */
 .session-progress-bar {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin: 0.85rem 0;
+  gap: 0.85rem;
+  margin: 0.75rem 0;
 }
 
 .session-track {
   flex: 1;
-  height: 15px;
+  height: 14px;
   background: #dde5f4;
   border-radius: 99px;
   overflow: hidden;
@@ -1000,7 +1042,7 @@ body {
 .session-counter {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   color: var(--text-muted);
   white-space: nowrap;
 }
@@ -1011,8 +1053,8 @@ body {
   border: 2px solid var(--border-color);
   border-radius: var(--radius-xl);
   box-shadow: 0 8px 0 var(--border-shadow);
-  padding: 1.5rem;
-  min-height: 410px;
+  padding: 1.35rem;
+  min-height: 390px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -1024,8 +1066,8 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1.1rem;
+  gap: 0.65rem;
+  margin-bottom: 1rem;
   flex-wrap: wrap;
 }
 
@@ -1033,37 +1075,37 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.35rem 0.85rem;
+  padding: 0.32rem 0.8rem;
   border-radius: 99px;
   font-family: var(--font-display);
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 700;
   background: var(--sapphire-soft);
   color: var(--sapphire-dark);
 }
 
 .word-rank-badge {
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 800;
   color: var(--text-muted);
   background: var(--surface-soft);
-  padding: 0.28rem 0.7rem;
+  padding: 0.26rem 0.7rem;
   border-radius: 99px;
   border: 1px solid var(--border-color);
 }
 
 .exercise-body {
   display: grid;
-  grid-template-columns: 215px minmax(0, 1fr);
-  gap: 1.5rem;
+  grid-template-columns: 205px minmax(0, 1fr);
+  gap: 1.35rem;
   align-items: center;
   min-width: 0;
   width: 100%;
 }
 
 .anime-art-box {
-  width: 215px;
-  height: 215px;
+  width: 205px;
+  height: 205px;
   aspect-ratio: 1 / 1;
   border-radius: 22px;
   border: 3px solid var(--border-color);
@@ -1084,8 +1126,8 @@ body {
 }
 
 .anime-art-svg {
-  width: 110px;
-  height: 110px;
+  width: 105px;
+  height: 105px;
   filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.14));
   animation: floatIdle 3s infinite ease-in-out;
 }
@@ -1098,7 +1140,7 @@ body {
   background: rgba(15, 23, 42, 0.78);
   backdrop-filter: blur(4px);
   color: #fde047;
-  font-size: 0.64rem;
+  font-size: 0.62rem;
   font-weight: 800;
   padding: 3px 7px;
   border-radius: 8px;
@@ -1115,7 +1157,7 @@ body {
   right: 0;
   background: rgba(255, 255, 255, 0.92);
   padding: 5px 8px;
-  font-size: 0.65rem;
+  font-size: 0.64rem;
   font-weight: 800;
   color: var(--text-muted);
   border-top: 1px solid var(--border-color);
@@ -1128,12 +1170,14 @@ body {
 .question-zone {
   display: flex;
   flex-direction: column;
-  gap: 0.9rem;
+  gap: 0.85rem;
+  min-width: 0;
+  width: 100%;
 }
 
 .prompt-instruction {
   font-family: var(--font-display);
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   color: var(--text-main);
   line-height: 1.3;
 }
@@ -1141,29 +1185,31 @@ body {
 .word-showcase {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 0.6rem;
   background: var(--surface-soft);
-  padding: 0.85rem 1.05rem;
+  padding: 0.8rem 1rem;
   border-radius: var(--radius-lg);
   border: 2px dashed var(--border-color);
+  min-width: 0;
+  width: 100%;
 }
 
 .word-showcase-top {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
+  gap: 0.75rem;
   flex-wrap: wrap;
 }
 
 .btn-audio-tts {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
   border: none;
   background: var(--sapphire);
   box-shadow: 0 4px 0 var(--sapphire-dark);
   color: #fff;
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   cursor: pointer;
   transition: transform 0.15s ease;
   flex-shrink: 0;
@@ -1175,18 +1221,25 @@ body {
 
 .showcase-main-word {
   font-family: var(--font-display);
-  font-size: 1.65rem;
+  font-size: 1.6rem;
   font-weight: 700;
   color: var(--sapphire-dark);
 }
 
 .showcase-phonetic {
-  font-size: 0.84rem;
+  font-size: 0.82rem;
   font-weight: 800;
   color: var(--diamond-dark);
   background: var(--diamond-soft);
   padding: 3px 10px;
   border-radius: 99px;
+}
+
+.showcase-example {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  font-weight: 700;
+  font-style: italic;
 }
 
 /* Barra de Tiempos Verbales con Audio en el Ejercicio */
@@ -1202,25 +1255,25 @@ body {
 .options-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.8rem;
+  gap: 0.75rem;
   min-width: 0;
   width: 100%;
 }
 
 .option-btn {
-  padding: 0.9rem 1.05rem;
+  padding: 0.85rem 1rem;
   border-radius: var(--radius-lg);
   border: 2px solid var(--border-color);
   background: var(--surface);
   box-shadow: 0 5px 0 var(--border-shadow);
   font-family: var(--font-display);
-  font-size: 1.02rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--text-main);
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.6rem;
   text-align: left;
   transition: all 0.15s var(--transition-bounce);
 }
@@ -1271,7 +1324,7 @@ body {
 .spelling-box {
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
+  gap: 0.75rem;
 }
 
 .letter-hints {
@@ -1301,7 +1354,8 @@ body {
 
 .spelling-input {
   flex: 1;
-  padding: 0.85rem 1.15rem;
+  min-width: 0;
+  padding: 0.8rem 1.1rem;
   border-radius: var(--radius-lg);
   border: 3px solid var(--border-color);
   font-family: var(--font-display);
@@ -1330,7 +1384,7 @@ body {
 /* Flashcards 3D */
 .flashcard-scene {
   width: 100%;
-  height: 300px;
+  height: 295px;
   perspective: 1200px;
   cursor: pointer;
   margin: 0.2rem 0 1rem;
@@ -1356,11 +1410,11 @@ body {
   border-radius: var(--radius-xl);
   border: 3px solid var(--border-color);
   box-shadow: 0 6px 0 var(--border-shadow);
-  padding: 1.35rem;
+  padding: 1.3rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1.4rem;
+  gap: 1.35rem;
   background: linear-gradient(135deg, #ffffff 0%, #f8faff 100%);
 }
 
@@ -1389,8 +1443,8 @@ body {
 
 .tenses-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.65rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.6rem;
   width: 100%;
 }
 
@@ -1399,7 +1453,7 @@ body {
   border: 2px solid #c4b5fd;
   box-shadow: 0 4px 0 #a78bfa;
   border-radius: 14px;
-  padding: 0.65rem;
+  padding: 0.6rem;
   text-align: center;
   cursor: pointer;
   transition: transform 0.14s ease, background 0.14s ease;
@@ -1426,7 +1480,7 @@ body {
 
 .tense-value {
   font-family: var(--font-display);
-  font-size: 1rem;
+  font-size: 0.98rem;
   font-weight: 700;
   color: var(--text-main);
 }
@@ -1441,13 +1495,14 @@ body {
    7. BOTONES 3D TÁCTILES, BANDA DE FEEDBACK Y MODALES
    ========================================================================== */
 .btn-3d {
-  padding: 0.75rem 1.3rem;
+  padding: 0.72rem 1.25rem;
   border-radius: var(--radius-lg);
   border: none;
   font-family: var(--font-display);
-  font-size: 0.96rem;
+  font-size: 0.95rem;
   font-weight: 700;
   cursor: pointer;
+  white-space: nowrap;
   transition: all 0.15s ease;
   display: inline-flex;
   align-items: center;
@@ -1465,8 +1520,8 @@ body {
 }
 
 .btn-sm {
-  padding: 0.46rem 0.85rem;
-  font-size: 0.82rem;
+  padding: 0.44rem 0.8rem;
+  font-size: 0.8rem;
   border-radius: 12px;
 }
 
@@ -1766,17 +1821,27 @@ body {
 }
 
 /* ==========================================================================
-   8. DISEÑO RESPONSIVO PARA TABLETS Y MÓVILES
+   8. DISEÑO RESPONSIVO PARA TABLETS (VERTICAL Y HORIZONTAL) Y MÓVILES
    ========================================================================== */
 
-/* TABLETS (Hasta 1024px): Una columna contenida, Ligas arriba en grid compacto,
-   seguido inmediatamente por Estudio + Juego, y Misiones abajo */
+/* TABLETS (Hasta 1024px, incluyendo iPad Mini 768x1024) */
 @media (max-width: 1024px) {
+  .top-hud {
+    padding: 0.6rem 1rem;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .hud-xp-card {
+    min-width: 170px;
+    padding: 0.35rem 0.7rem;
+  }
+
   .app-layout {
     grid-template-columns: minmax(0, 1fr);
     padding: 0 1rem 2.5rem;
     margin: 1rem auto;
-    gap: 1.1rem;
+    gap: 1rem;
   }
 
   .sidebar-panel {
@@ -1785,6 +1850,7 @@ body {
 
   .league-panel {
     order: 1;
+    padding: 0.95rem 1.1rem;
   }
 
   .main-stage {
@@ -1799,48 +1865,79 @@ body {
     order: 4;
   }
 
+  /* 6 Ligas en cuadrícula de 3 columnas x 2 filas en Tablet (Ocupa muy poca altura) */
   .league-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.55rem;
+  }
+
+  .league-btn {
+    padding: 0.55rem 0.7rem;
+    gap: 0.55rem;
+  }
+
+  .league-gem {
+    width: 36px;
+    height: 36px;
+    font-size: 1.25rem;
+  }
+
+  .league-name {
+    font-size: 0.88rem;
+  }
+
+  .league-desc {
+    display: none;
+  }
+
+  .league-progress {
+    font-size: 0.75rem;
+    padding: 3px 7px;
+  }
+
+  .quests-list {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.6rem;
   }
 
-  .quests-list {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.65rem;
-  }
-}
-
-/* TABLETS VERTICALES Y PANTALLAS MEDIANAS (Hasta 820px) */
-@media (max-width: 820px) {
-  .league-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* Mantener los 4 modos + Combo en 1 sola línea en Tablet (768px) */
+  .arena-toolbar {
+    padding: 0.6rem 0.85rem;
+    gap: 0.45rem;
+    flex-wrap: nowrap;
   }
 
-  .quests-list {
-    grid-template-columns: minmax(0, 1fr);
+  .mode-pills {
+    gap: 0.35rem;
+    flex-wrap: nowrap;
   }
 
+  .mode-pill {
+    padding: 0.38rem 0.65rem;
+    font-size: 0.78rem;
+  }
+
+  .combo-badge {
+    padding: 0.32rem 0.65rem;
+    font-size: 0.75rem;
+  }
+
+  /* Mantener imagen a la izquierda y pregunta a la derecha en Tablet (768px) */
   .exercise-body {
-    grid-template-columns: minmax(0, 1fr);
-    justify-items: center;
-    gap: 1.1rem;
+    grid-template-columns: 170px minmax(0, 1fr);
+    gap: 1.15rem;
   }
 
   .anime-art-box {
-    width: 175px;
-    height: 175px;
+    width: 170px;
+    height: 170px;
   }
 
   .anime-art-svg {
-    width: 90px;
-    height: 90px;
-  }
-
-  .question-zone {
-    width: 100%;
-    min-width: 0;
+    width: 88px;
+    height: 88px;
   }
 
   .inline-tenses-audio-bar {
@@ -1848,27 +1945,28 @@ body {
   }
 }
 
-/* CELULARES (Hasta 640px) */
-@media (max-width: 640px) {
+/* CELULARES Y PANTALLAS VERTICALES PEQUEÑAS (Hasta 680px, ej. iPhone 16 Pro Max 440px) */
+@media (max-width: 680px) {
+  /* Barra Superior en exactamente 2 filas limpias */
   .top-hud {
     flex-wrap: wrap;
     padding: 0.55rem 0.75rem;
-    gap: 0.5rem;
+    gap: 0.45rem;
   }
 
   .brand-logo {
-    width: 36px;
-    height: 36px;
-    font-size: 1.2rem;
-    border-radius: 11px;
+    width: 34px;
+    height: 34px;
+    font-size: 1.15rem;
+    border-radius: 10px;
   }
 
   .brand-title {
-    font-size: 1.15rem;
+    font-size: 1.1rem;
   }
 
   .brand-badge {
-    font-size: 0.6rem;
+    display: none;
   }
 
   .hud-stats {
@@ -1876,34 +1974,34 @@ body {
   }
 
   .stat-pill {
-    padding: 0.28rem 0.55rem;
-    gap: 0.3rem;
-    border-radius: 11px;
+    padding: 0.26rem 0.5rem;
+    gap: 0.25rem;
+    border-radius: 10px;
   }
 
   .streak-icon,
   .stat-icon {
-    font-size: 1.05rem;
+    font-size: 1rem;
   }
 
   .stat-value {
-    font-size: 0.9rem;
+    font-size: 0.88rem;
   }
 
   .stat-label {
-    font-size: 0.66rem;
+    display: none;
   }
 
   .btn-icon-3d {
-    width: 36px;
-    height: 36px;
-    font-size: 1rem;
+    width: 34px;
+    height: 34px;
+    font-size: 0.95rem;
     border-radius: 10px;
   }
 
   .user-profile-btn {
-    padding: 0.28rem 0.55rem;
-    border-radius: 11px;
+    padding: 0.26rem 0.5rem;
+    border-radius: 10px;
   }
 
   .user-name {
@@ -1915,41 +2013,67 @@ body {
     min-width: 100%;
     width: 100%;
     max-width: 100%;
-    padding: 0.35rem 0.65rem;
+    padding: 0.32rem 0.65rem;
   }
 
   .app-layout {
-    padding: 0 0.75rem 2rem;
-    margin: 0.75rem auto;
-    gap: 0.9rem;
+    padding: 0 0.7rem 2rem;
+    margin: 0.65rem auto;
+    gap: 0.8rem;
   }
 
   .card-panel {
-    padding: 0.9rem;
+    padding: 0.85rem;
     border-radius: 18px;
   }
 
-  /* Ligas en carrusel táctil horizontal de 1 sola fila en celular */
+  .panel-header {
+    margin-bottom: 0.65rem;
+  }
+
+  .panel-header h2 {
+    font-size: 1rem;
+  }
+
+  /* 6 Ligas en Móvil: Carrusel Horizontal de 1 sola fila (con flex-direction: row explícito) */
   .league-list {
     display: flex;
+    flex-direction: row;
     overflow-x: auto;
-    gap: 0.55rem;
+    gap: 0.5rem;
     padding-bottom: 6px;
     scrollbar-width: thin;
+    width: 100%;
   }
 
   .league-btn {
-    min-width: 215px;
-    width: 215px;
+    width: auto;
+    min-width: 175px;
     flex-shrink: 0;
-    padding: 0.6rem 0.75rem;
+    padding: 0.5rem 0.65rem;
+    gap: 0.5rem;
   }
 
-  /* Cabecera de Estudio por Niveles adaptada a móvil */
+  .league-gem {
+    width: 32px;
+    height: 32px;
+    font-size: 1.15rem;
+    border-radius: 10px;
+  }
+
+  .league-name {
+    font-size: 0.84rem;
+  }
+
+  .league-desc {
+    display: none;
+  }
+
+  /* Cabecera de Estudio por Niveles compacta en Móvil */
   .study-panel-header {
     flex-direction: column;
     align-items: stretch;
-    gap: 0.6rem;
+    gap: 0.55rem;
   }
 
   .study-header-left {
@@ -1959,8 +2083,8 @@ body {
 
   .study-header-actions {
     display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    gap: 0.4rem;
+    grid-template-columns: auto 1fr auto;
+    gap: 0.35rem;
     width: 100%;
   }
 
@@ -1970,36 +2094,37 @@ body {
   }
 
   .level-indicator-pill {
-    font-size: 0.78rem;
-    padding: 0.38rem 0.55rem;
+    font-size: 0.76rem;
+    padding: 0.36rem 0.45rem;
     text-align: center;
   }
 
   .study-word-card {
     width: 255px;
     min-width: 255px;
-    padding: 0.75rem;
+    padding: 0.7rem;
   }
 
-  /* Barra de modos en cuadrícula 2x2 táctil */
+  /* Barra de modos en cuadrícula 2x2 táctil en móvil */
   .arena-toolbar {
     flex-direction: column;
     align-items: stretch;
-    padding: 0.65rem;
-    gap: 0.55rem;
+    padding: 0.6rem;
+    gap: 0.5rem;
+    flex-wrap: wrap;
   }
 
   .mode-pills {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.45rem;
+    gap: 0.4rem;
     width: 100%;
   }
 
   .mode-pill {
     text-align: center;
-    padding: 0.45rem 0.4rem;
-    font-size: 0.78rem;
+    padding: 0.42rem 0.35rem;
+    font-size: 0.76rem;
   }
 
   .combo-badge {
@@ -2007,31 +2132,37 @@ body {
     width: 100%;
   }
 
-  /* Tarjeta de ejercicio compacta en móvil */
+  /* Tarjeta de ejercicio en móvil */
   .exercise-card {
-    padding: 1rem;
+    padding: 0.95rem;
     min-height: auto;
     border-radius: 18px;
   }
 
+  .exercise-body {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: 0.9rem;
+  }
+
   .anime-art-box {
-    width: 145px;
-    height: 145px;
+    width: 135px;
+    height: 135px;
     border-radius: 18px;
   }
 
   .anime-art-svg {
-    width: 76px;
-    height: 76px;
+    width: 72px;
+    height: 72px;
   }
 
   .prompt-instruction {
-    font-size: 1.08rem;
+    font-size: 1.04rem;
     text-align: center;
   }
 
   .word-showcase {
-    padding: 0.7rem;
+    padding: 0.65rem;
   }
 
   .word-showcase-top {
@@ -2040,29 +2171,29 @@ body {
   }
 
   .showcase-main-word {
-    font-size: 1.4rem;
+    font-size: 1.35rem;
   }
 
   .options-grid {
     grid-template-columns: minmax(0, 1fr);
-    gap: 0.6rem;
+    gap: 0.55rem;
   }
 
   .option-btn {
-    padding: 0.75rem 0.9rem;
-    font-size: 0.95rem;
+    padding: 0.72rem 0.85rem;
+    font-size: 0.92rem;
   }
 
   .spelling-input-row {
     flex-direction: column;
-    gap: 0.55rem;
+    gap: 0.5rem;
   }
 
   .spelling-input {
     width: 100%;
     min-width: 0;
-    font-size: 1.05rem;
-    padding: 0.75rem 0.95rem;
+    font-size: 1rem;
+    padding: 0.7rem 0.9rem;
   }
 
   .spelling-input-row .btn-3d {
@@ -2071,40 +2202,44 @@ body {
 
   .tenses-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.5rem;
+    gap: 0.45rem;
   }
 
   .flashcard-scene {
-    height: 430px;
+    height: 410px;
   }
 
   .flashcard-face {
     flex-direction: column;
     justify-content: center;
     text-align: center;
-    padding: 1rem;
-    gap: 0.7rem;
+    padding: 0.95rem;
+    gap: 0.6rem;
   }
 
   .flashcard-actions {
     flex-direction: column;
-    gap: 0.55rem;
+    gap: 0.5rem;
   }
 
   .flashcard-actions .btn-3d {
     width: 100%;
   }
 
+  .quests-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .feedback-banner {
     flex-direction: column;
     align-items: stretch;
     text-align: center;
-    padding: 0.9rem;
+    padding: 0.85rem;
   }
 
   .feedback-content {
     flex-direction: column;
-    gap: 0.4rem;
+    gap: 0.35rem;
   }
 
   .feedback-banner .btn-3d {
