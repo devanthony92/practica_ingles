@@ -504,10 +504,11 @@ function renderStudyByLevelsSection() {
     });
   });
 
-  // Hacer scroll suave a la píldora del nivel activo
+  // Hacer scroll interno únicamente dentro de la tira de niveles
   const activePill = stripEl.querySelector('.level-pill-btn.active');
   if (activePill) {
-    activePill.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    const targetLeft = activePill.offsetLeft - stripEl.clientWidth / 2 + activePill.clientWidth / 2;
+    stripEl.scrollTo({ left: Math.max(0, targetLeft), behavior: 'smooth' });
   }
 
   // 2. Renderizar las 10 Tarjetas Táctiles de Estudio del Nivel Actual (con audio en cada Tiempo Verbal)
@@ -564,6 +565,13 @@ function renderStudyByLevelsSection() {
 
   // Eventos de audio individual para cada uno de los 4 tiempos verbales
   bindTenseAudioButtons(gridEl);
+
+  // Centrar automáticamente la tarjeta de la palabra activa dentro del carrusel de estudio
+  const activeStudyCard = gridEl.querySelector('.study-word-card.active-study-card');
+  if (activeStudyCard) {
+    const cardLeft = activeStudyCard.offsetLeft - gridEl.clientWidth / 2 + activeStudyCard.clientWidth / 2;
+    gridEl.scrollTo({ left: Math.max(0, cardLeft), behavior: 'smooth' });
+  }
 
   // Evento para saltar a practicar esa palabra en la Arena
   gridEl.querySelectorAll('[data-practice-idx]').forEach(btn => {

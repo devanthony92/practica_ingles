@@ -321,12 +321,13 @@ body {
    2. LAYOUT PRINCIPAL SPA (SIDEBAR + ÁREA CENTRAL)
    ========================================================================== */
 .app-layout {
-  max-width: 1320px;
-  margin: 1.4rem auto;
-  padding: 0 1.25rem 3rem;
+  width: 100%;
+  max-width: 1420px;
+  margin: 1.25rem auto;
+  padding: 0 1.5rem 3rem;
   display: grid;
-  grid-template-columns: 330px 1fr;
-  gap: 1.5rem;
+  grid-template-columns: 315px minmax(0, 1fr);
+  gap: 1.35rem;
   align-items: start;
 }
 
@@ -334,6 +335,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.15rem;
+  min-width: 0;
 }
 
 .card-panel {
@@ -341,7 +343,9 @@ body {
   border: 2px solid var(--border-color);
   border-radius: var(--radius-xl);
   box-shadow: 0 6px 0 var(--border-shadow);
-  padding: 1.2rem;
+  padding: 1.15rem;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .panel-header {
@@ -576,13 +580,19 @@ body {
 .main-stage {
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
+  gap: 1.1rem;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
 }
 
 .study-section-card {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.85rem;
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
 }
 
 .study-panel-header {
@@ -620,7 +630,10 @@ body {
   background: var(--surface-soft);
   border: 2px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: 0.65rem;
+  padding: 0.6rem;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .levels-strip {
@@ -629,6 +642,7 @@ body {
   overflow-x: auto;
   padding-bottom: 6px;
   scrollbar-width: thin;
+  width: 100%;
 }
 
 .level-pill-btn {
@@ -685,7 +699,10 @@ body {
 .study-words-body {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  gap: 0.7rem;
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
 }
 
 .study-helper-bar {
@@ -694,7 +711,7 @@ body {
   align-items: center;
   flex-wrap: wrap;
   gap: 0.5rem;
-  font-size: 0.84rem;
+  font-size: 0.82rem;
   color: var(--text-muted);
   padding: 0 0.2rem;
 }
@@ -709,22 +726,28 @@ body {
   border-radius: 99px;
 }
 
-/* Grid de Tarjetas Táctiles de Palabras (Mismo estilo que Ligas y Misiones) */
+/* Carrusel Táctil Horizontal de las 10 Palabras (Compacto y contenido al 100%) */
 .study-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  display: flex;
   gap: 0.85rem;
+  overflow-x: auto;
+  padding: 4px 2px 10px;
+  scrollbar-width: thin;
+  width: 100%;
 }
 
 .study-word-card {
+  width: 280px;
+  min-width: 280px;
+  flex-shrink: 0;
   background: var(--surface-soft);
   border: 2px solid var(--border-color);
   border-radius: var(--radius-lg);
   box-shadow: 0 4px 0 var(--border-shadow);
-  padding: 0.85rem;
+  padding: 0.8rem;
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 0.6rem;
   transition: all 0.2s var(--transition-bounce);
 }
 
