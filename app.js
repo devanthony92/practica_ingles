@@ -458,10 +458,16 @@ function renderStudyByLevelsSection() {
   leagueBadge.style.background = meta.badgeBg;
   leagueBadge.style.color = meta.badgeColor;
 
-  // Resaltar Liga activa en el menú izquierdo
-  document.querySelectorAll('#league-selector .league-btn').forEach(btn => {
+  // Resaltar Liga activa en el menú de ligas y centrarla si está en modo carrusel móvil
+  const leagueListEl = document.getElementById('league-selector');
+  leagueListEl.querySelectorAll('.league-btn').forEach(btn => {
     btn.classList.toggle('active', btn.getAttribute('data-tier') === tier);
   });
+  const activeLeagueBtn = leagueListEl.querySelector('.league-btn.active');
+  if (activeLeagueBtn && leagueListEl.scrollWidth > leagueListEl.clientWidth) {
+    const lLeft = activeLeagueBtn.offsetLeft - leagueListEl.clientWidth / 2 + activeLeagueBtn.clientWidth / 2;
+    leagueListEl.scrollTo({ left: Math.max(0, lLeft), behavior: 'smooth' });
+  }
 
   // Progreso de este nivel (de 0 a 10 palabras)
   const masteredInLevel = groupWords.filter(w => masteredSet.has(w.id)).length;
