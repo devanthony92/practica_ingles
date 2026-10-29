@@ -506,7 +506,7 @@ function renderStudyByLevelsSection() {
   stripEl.querySelectorAll('.level-pill-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const targetGroup = Number(btn.getAttribute('data-target-group'));
-      selectGroup(targetGroup, 0);
+      selectGroup(targetGroup);
     });
   });
 
@@ -546,11 +546,11 @@ function renderStudyByLevelsSection() {
               </button>
               <button
                 type="button"
-                class="btn-practice-word"
+                class="btn-practice-word ${isMastered ? 'is-review-mode' : ''}"
                 data-practice-idx="${idx}"
-                title="Practicar esta palabra abajo"
+                title="${isMastered ? 'Palabra ya aprendida: practicar en modo repaso (sin XP extra)' : 'Jugar esta palabra para ganar XP'}"
               >
-                🎯 Jugar
+                ${isMastered ? '🔁 Repasar' : '🎯 Jugar'}
               </button>
             </div>
           </div>
@@ -789,11 +789,12 @@ function renderQuizExercise(wordObj, groupWords, levelInLeague) {
   }
 
   const options = [correctAnswer, ...distractors].sort(() => Math.random() - 0.5);
+  const isAlreadyMastered = appState.masteredWords.includes(wordObj.id);
 
   stage.innerHTML = `
     <div class="exercise-header">
       <span class="exercise-badge">⚡ Selección Múltiple · Nivel ${levelInLeague}</span>
-      <span class="word-rank-badge">${TIER_META[wordObj.tier].name}</span>
+      <span class="word-rank-badge">${isAlreadyMastered ? '👑 Ya aprendida (Modo Repaso · 0 XP)' : TIER_META[wordObj.tier].name}</span>
     </div>
 
     <div class="exercise-body">
@@ -876,11 +877,12 @@ function renderSpellingExercise(wordObj, levelInLeague) {
     .split('')
     .map((ch, idx) => `<span class="letter-slot">${idx === 0 ? ch.toUpperCase() : '_'}</span>`)
     .join('');
+  const isAlreadyMastered = appState.masteredWords.includes(wordObj.id);
 
   stage.innerHTML = `
     <div class="exercise-header">
       <span class="exercise-badge">⌨️ Escritura (Spelling) · Nivel ${levelInLeague}</span>
-      <span class="word-rank-badge">${TIER_META[wordObj.tier].name}</span>
+      <span class="word-rank-badge">${isAlreadyMastered ? '👑 Ya aprendida (Modo Repaso · 0 XP)' : TIER_META[wordObj.tier].name}</span>
     </div>
 
     <div class="exercise-body">
@@ -965,11 +967,12 @@ function renderSpellingExercise(wordObj, levelInLeague) {
 /* ---------------- MINIJUEGO 3: TARJETAS DE MEMORIA 3D (FLASHCARDS) ---------------- */
 function renderFlashcardExercise(wordObj, levelInLeague) {
   const stage = document.getElementById('exercise-stage');
+  const isAlreadyMastered = appState.masteredWords.includes(wordObj.id);
 
   stage.innerHTML = `
     <div class="exercise-header">
       <span class="exercise-badge">🃏 Flashcard 3D · Nivel ${levelInLeague}</span>
-      <span class="word-rank-badge">${TIER_META[wordObj.tier].name}</span>
+      <span class="word-rank-badge">${isAlreadyMastered ? '👑 Ya aprendida (Modo Repaso · 0 XP)' : TIER_META[wordObj.tier].name}</span>
     </div>
 
     <div class="flashcard-scene" id="flashcard-scene">
@@ -1026,10 +1029,10 @@ function renderFlashcardExercise(wordObj, levelInLeague) {
 
     <div class="flashcard-actions">
       <button class="btn-3d btn-outline" id="btn-flash-review">
-        🔁 Repasar luego (+10 XP)
+        🔁 Repasar luego (0 XP)
       </button>
       <button class="btn-3d btn-primary" id="btn-flash-master">
-        👑 ¡Ya me la sé! (+25 XP)
+        ${isAlreadyMastered ? '✅ Repaso completado (0 XP)' : '👑 ¡Ya me la sé! (+20 XP)'}
       </button>
     </div>
   `;
@@ -1053,9 +1056,14 @@ function renderFlashcardExercise(wordObj, levelInLeague) {
   document.getElementById('btn-flash-review').addEventListener('click', () => {
     if (sessionState.answered) return;
     sessionState.answered = true;
-    registerDailyPractice();
-    awardXP(10);
-    showFeedbackBanner(true, '¡Buen repaso!', 'Sigue practicando las demás palabras de este nivel.');
+    SoundFX.flip();
+    card3d.classList.add('is-flipped');
+    document.getElementById('btn-advance-next-group').classList.add('hidden');
+    showFeedbackBanner(
+      true,
+      '🔁 Marcada para repasar luego (0 XP)',
+      'Revisa sus 4 tiempos verbales y pasa a la siguiente palabra cuando estés listo.'
+    );
   });
 
   document.getElementById('btn-flash-master').addEventListener('click', () => {
@@ -1073,22 +1081,30 @@ function renderFlashcardExercise(wordObj, levelInLeague) {
    ============================================================================ */
 function handleCorrectAnswer(wordObj, detailMsg) {
   SoundFX.success();
-  launchConfetti(45);
   registerDailyPractice();
 
-  if (!appState.masteredWords.includes(wordObj.id)) {
+  const isFirstTimeMastered = !appState.masteredWords.includes(wordObj.id);
+  let totalEarned = 0;
+
+  if (isFirstTimeMastered) {
     appState.masteredWords.push(wordObj.id);
+    launchConfetti(45);
+
+    const baseXP = 20;
+    const bonusXP = Math.min(15, (sessionState.combo - 1) * 5);
+    totalEarned = baseXP + bonusXP;
+
+    sessionState.combo += 1;
+
+    updateQuestProgress('q_words', 1);
+    updateQuestProgress('q_flawless', 0, sessionState.combo);
+    awardXP(totalEarned);
+  } else {
+    // Si la palabra ya estaba aprendida, es solo un repaso y NO otorga XP ni infla combos/misiones
+    saveState();
+    updateHUD();
   }
 
-  const baseXP = 20;
-  const bonusXP = Math.min(15, (sessionState.combo - 1) * 5);
-  const totalEarned = baseXP + bonusXP;
-
-  sessionState.combo += 1;
-
-  updateQuestProgress('q_words', 1);
-  updateQuestProgress('q_flawless', 0, sessionState.combo);
-  awardXP(totalEarned);
   renderStudyByLevelsSection();
 
   const groupWords = getWordsByGroup(appState.selectedGroup);
@@ -1096,20 +1112,30 @@ function handleCorrectAnswer(wordObj, detailMsg) {
   const advanceBtn = document.getElementById('btn-advance-next-group');
 
   if (masteredCount >= 10 && appState.selectedGroup < 200) {
-    launchConfetti(100);
+    if (isFirstTimeMastered) launchConfetti(100);
     advanceBtn.classList.remove('hidden');
     showFeedbackBanner(
       true,
-      '🏆 ¡Completaste las 10 palabras de este Nivel!',
+      isFirstTimeMastered
+        ? `🏆 ¡Completaste las 10 palabras de este Nivel! (+${totalEarned} XP)`
+        : '🔁 ¡Repaso completado! (Nivel ya dominado · 0 XP)',
       '¡Excelente! Ya puedes avanzar al siguiente nivel.'
     );
   } else {
     advanceBtn.classList.add('hidden');
-    showFeedbackBanner(
-      true,
-      `¡Muy bien! +${totalEarned} XP (Combo x${sessionState.combo - 1})`,
-      detailMsg
-    );
+    if (isFirstTimeMastered) {
+      showFeedbackBanner(
+        true,
+        `¡Muy bien! +${totalEarned} XP (Combo x${sessionState.combo - 1})`,
+        detailMsg
+      );
+    } else {
+      showFeedbackBanner(
+        true,
+        '🔁 ¡Repaso completado! (Palabra ya aprendida · 0 XP)',
+        `${detailMsg} — Practica una palabra nueva sin corona (👑) para ganar más XP.`
+      );
+    }
   }
 }
 
@@ -1141,11 +1167,19 @@ function hideFeedbackBanner() {
   if (banner) banner.classList.add('hidden');
 }
 
-function selectGroup(groupNumber, wordIdx = 0) {
+function selectGroup(groupNumber, wordIdx = null) {
   const clamped = Math.max(1, Math.min(200, Number(groupNumber)));
   appState.selectedGroup = clamped;
   appState.selectedTier = getTierForGroup(clamped);
-  sessionState.wordIndexInGroup = wordIdx;
+
+  if (wordIdx === null) {
+    const groupWords = getWordsByGroup(clamped);
+    const firstPendingIdx = groupWords.findIndex(w => !appState.masteredWords.includes(w.id));
+    sessionState.wordIndexInGroup = firstPendingIdx !== -1 ? firstPendingIdx : 0;
+  } else {
+    sessionState.wordIndexInGroup = wordIdx;
+  }
+
   saveState();
   loadExerciseForCurrentGroupWord();
 }
@@ -1156,7 +1190,7 @@ function selectGroup(groupNumber, wordIdx = 0) {
 function initEvents() {
   // Logo Home lleva al Nivel 1 de Bronce
   document.getElementById('btn-home-logo').addEventListener('click', () => {
-    selectGroup(1, 0);
+    selectGroup(1);
   });
 
   // Selector de las 6 Ligas en el Sidebar
@@ -1166,17 +1200,17 @@ function initEvents() {
       const meta = TIER_META[tier];
       if (!meta) return;
       appState.selectedTier = tier;
-      selectGroup(meta.minGroup, 0);
+      selectGroup(meta.minGroup);
     });
   });
 
   // Botones Nivel Anterior / Siguiente en la Sección de Estudio
   document.getElementById('btn-prev-level').addEventListener('click', () => {
-    selectGroup(appState.selectedGroup - 1, 0);
+    selectGroup(appState.selectedGroup - 1);
   });
 
   document.getElementById('btn-next-level').addEventListener('click', () => {
-    selectGroup(appState.selectedGroup + 1, 0);
+    selectGroup(appState.selectedGroup + 1);
   });
 
   // Mostrar / Ocultar las 10 tarjetas de estudio del nivel
@@ -1197,15 +1231,28 @@ function initEvents() {
     });
   });
 
-  // Botón "Siguiente Palabra"
+  // Botón "Siguiente Palabra" (prioriza la siguiente palabra aún no aprendida del nivel)
   document.getElementById('btn-next-question').addEventListener('click', () => {
-    sessionState.wordIndexInGroup = (sessionState.wordIndexInGroup + 1) % 10;
+    const groupWords = getWordsByGroup(appState.selectedGroup);
+    const total = groupWords.length || 10;
+    let nextIdx = (sessionState.wordIndexInGroup + 1) % total;
+
+    for (let offset = 1; offset <= total; offset++) {
+      const candidateIdx = (sessionState.wordIndexInGroup + offset) % total;
+      const candidateWord = groupWords[candidateIdx];
+      if (candidateWord && !appState.masteredWords.includes(candidateWord.id)) {
+        nextIdx = candidateIdx;
+        break;
+      }
+    }
+
+    sessionState.wordIndexInGroup = nextIdx;
     loadExerciseForCurrentGroupWord();
   });
 
   // Botón "¡Pasar al Siguiente Nivel!"
   document.getElementById('btn-advance-next-group').addEventListener('click', () => {
-    selectGroup(appState.selectedGroup + 1, 0);
+    selectGroup(appState.selectedGroup + 1);
   });
 
   // Sonido On/Off
@@ -1290,5 +1337,5 @@ document.addEventListener('DOMContentLoaded', () => {
   updateHUD();
   renderDailyQuests();
   initEvents();
-  loadExerciseForCurrentGroupWord();
+  selectGroup(appState.selectedGroup);
 });

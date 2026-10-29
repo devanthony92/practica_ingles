@@ -891,6 +891,12 @@ body {
 .btn-practice-word:active {
   transform: translateY(2px);
 }
+.btn-practice-word.is-review-mode {
+  background: var(--emerald-soft);
+  border-color: var(--emerald);
+  box-shadow: 0 3px 0 var(--emerald-dark);
+  color: var(--emerald-dark);
+}
 
 /* Botones Táctiles de los 4 Tiempos Verbales */
 .study-tenses-grid {
