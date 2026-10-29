@@ -1045,7 +1045,7 @@ body {
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 0.85rem;
-  color: var(--text-muted);
+  color: var(--text-main);
   white-space: nowrap;
 }
 
@@ -1652,7 +1652,9 @@ body {
   max-height: 92vh;
   overflow-y: auto;
   padding: 1.35rem 1.5rem;
-  background: var(--bg-canvas);
+  background: #f4f7fe;
+  border: 3px solid var(--border-color);
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.38);
 }
 
 .practice-modal-header {
