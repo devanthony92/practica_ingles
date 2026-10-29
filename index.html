@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LexiQuest 2000 — Estudio por Niveles y Ligas</title>
+  <!-- Tipografías redondeadas y amigables (Fredoka y Nunito) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <!-- Librería de Confeti para recompensas visuales -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js" defer></script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Contenedor de partículas flotantes de XP y efectos visuales -->
+  <div id="fx-layer" aria-hidden="true"></div>
+
+  <!-- BARRA SUPERIOR DE GAMIFICACIÓN (HUD) -->
+  <header class="top-hud">
+    <div class="hud-brand" id="btn-home-logo" role="button" tabindex="0" title="Ir al Nivel 1 de Bronce">
+      <div class="brand-logo">⚡</div>
+      <div class="brand-text">
+        <span class="brand-title">LexiQuest</span>
+        <span class="brand-badge">2,000 PALABRAS</span>
+      </div>
+    </div>
+
+    <!-- Barra de Nivel de Cuenta y XP -->
+    <div class="hud-xp-card" title="Progreso hacia el siguiente nivel">
+      <div class="level-shield" id="hud-level-badge">Nv. 1</div>
+      <div class="xp-bar-wrapper">
+        <div class="xp-bar-labels">
+          <span id="hud-xp-text">0 / 150 XP</span>
+          <span class="xp-next-hint" id="hud-level-title">Aprendiz</span>
+        </div>
+        <div class="progress-track xp-track">
+          <div class="progress-fill xp-fill" id="hud-xp-bar" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estadísticas de Retención: Racha Diaria, Palabras Dominadas y Perfil -->
+    <div class="hud-stats">
+      <!-- Contador de Racha Diaria (Streak) -->
+      <div class="stat-pill streak-pill" id="streak-pill" title="Racha de días seguidos practicando">
+        <span class="streak-icon" id="streak-fire-icon">🔥</span>
+        <div class="stat-info">
+          <span class="stat-value" id="hud-streak-count">0</span>
+          <span class="stat-label" id="hud-streak-status">Días</span>
+        </div>
+      </div>
+
+      <!-- Contador de Palabras Dominadas (Meta 2,000) -->
+      <div class="stat-pill mastered-pill" title="Palabras aprendidas de las 2,000 más usadas">
+        <span class="stat-icon">👑</span>
+        <div class="stat-info">
+          <span class="stat-value" id="hud-mastered-count">0</span>
+          <span class="stat-label">/ 2000</span>
+        </div>
+      </div>
+
+      <!-- Botón de Sonido SFX -->
+      <button class="btn-icon-3d" id="btn-toggle-sound" title="Activar/Desactivar efectos de sonido" aria-label="Sonido">
+        🔊
+      </button>
+
+      <!-- Perfil de Usuario -->
+      <button class="user-profile-btn" id="btn-open-profile" title="Editar perfil y simular días">
+        <span class="user-avatar" id="hud-user-avatar">🦊</span>
+        <span class="user-name" id="hud-user-name">Jugador</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- LAYOUT PRINCIPAL SPA -->
+  <main class="app-layout">
+    <!-- COLUMNA IZQUIERDA: 6 Ligas (Bronce a Diamante), Misiones del Día y Racha -->
+    <aside class="sidebar-panel">
+      <!-- Selector de Ligas Limpio (Solo la liga y cuántas palabras llevan aprendidas) -->
+      <section class="card-panel league-panel">
+        <div class="panel-header">
+          <h2>🏆 Ligas de Nivel</h2>
+          <span class="subtitle-tag">6 Ligas</span>
+        </div>
+        <div class="league-list" id="league-selector">
+          <button class="league-btn active" data-tier="bronze">
+            <div class="league-gem">🥉</div>
+            <div class="league-details">
+              <span class="league-name">Liga Bronce</span>
+              <span class="league-desc">Palabras aprendidas</span>
+            </div>
+            <span class="league-progress" id="prog-bronze">0 / 300</span>
+          </button>
+
+          <button class="league-btn" data-tier="silver">
+            <div class="league-gem">🥈</div>
+            <div class="league-details">
+              <span class="league-name">Liga Plata</span>
+              <span class="league-desc">Palabras aprendidas</span>
+            </div>
+            <span class="league-progress" id="prog-silver">0 / 300</span>
+          </button>
+
+          <button class="league-btn" data-tier="gold">
+            <div class="league-gem">🥇</div>
+            <div class="league-details">
+              <span class="league-name">Liga Oro</span>
+              <span class="league-desc">Palabras aprendidas</span>
+            </div>
+            <span class="league-progress" id="prog-gold">0 / 350</span>
+          </button>
+
+          <button class="league-btn" data-tier="emerald">
+            <div class="league-gem">🟢</div>
+            <div class="league-details">
+              <span class="league-name">Liga Esmeralda</span>
+              <span class="league-desc">Palabras aprendidas</span>
+            </div>
+            <span class="league-progress" id="prog-emerald">0 / 350</span>
+          </button>
+
+          <button class="league-btn" data-tier="sapphire">
+            <div class="league-gem">🔷</div>
+            <div class="league-details">
+              <span class="league-name">Liga Zafiro</span>
+              <span class="league-desc">Palabras aprendidas</span>
+            </div>
+            <span class="league-progress" id="prog-sapphire">0 / 350</span>
+          </button>
+
+          <button class="league-btn" data-tier="diamond">
+            <div class="league-gem">💎</div>
+            <div class="league-details">
+              <span class="league-name">Liga Diamante</span>
+              <span class="league-desc">Palabras aprendidas</span>
+            </div>
+            <span class="league-progress" id="prog-diamond">0 / 350</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Misiones / Retos Diarios (Daily Quests) -->
+      <section class="card-panel quests-panel">
+        <div class="panel-header">
+          <h2>🎯 Misiones del Día</h2>
+          <span class="quest-timer" id="quest-reset-label">Hoy</span>
+        </div>
+        <div class="quests-list" id="daily-quests-container"></div>
+      </section>
+
+      <!-- Estado de Racha -->
+      <section class="card-panel streak-coach-panel">
+        <div class="streak-banner" id="streak-banner-box">
+          <div class="streak-big-flame" id="sidebar-flame">🔥</div>
+          <div>
+            <h3 id="streak-banner-title">¡Enciende tu racha!</h3>
+            <p id="streak-banner-desc">Completa 1 ejercicio hoy para mantener tu fuego encendido.</p>
+          </div>
+        </div>
+      </section>
+    </aside>
+
+    <!-- ÁREA CENTRAL: Cuadro Táctil de Estudio por Niveles + Arena de Práctica -->
+    <section class="main-stage">
+
+      <!-- CUADRO SUPERIOR: SECCIÓN DE ESTUDIO POR NIVELES (MISMO DISEÑO TÁCTIL QUE LAS TARJETAS DEL MENÚ) -->
+      <section class="card-panel study-section-card">
+        <div class="panel-header study-panel-header">
+          <div class="study-header-left">
+            <h2>📚 Estudio por Niveles</h2>
+            <span class="subtitle-tag" id="study-league-badge">🥉 Liga Bronce</span>
+          </div>
+
+          <div class="study-header-actions">
+            <button type="button" class="btn-3d btn-outline btn-sm" id="btn-prev-level" title="Nivel anterior">
+              ◀ Nivel Anterior
+            </button>
+            <div class="level-indicator-pill" id="current-level-pill">
+              Nivel 1 · 0/10
+            </div>
+            <button type="button" class="btn-3d btn-outline btn-sm" id="btn-next-level" title="Siguiente nivel">
+              Siguiente Nivel ▶
+            </button>
+            <button type="button" class="btn-3d btn-secondary btn-sm" id="btn-toggle-study-grid">
+              🙈 Ocultar Palabras
+            </button>
+          </div>
+        </div>
+
+        <!-- Barra Táctil de Niveles dentro de la Liga Activa -->
+        <div class="levels-strip-wrapper">
+          <div class="levels-strip" id="levels-strip-container" role="tablist" aria-label="Niveles de la liga">
+            <!-- Botones táctiles de Nivel 1, Nivel 2, etc. generados por JS -->
+          </div>
+        </div>
+
+        <!-- Contenedor Desplegable con las 10 Tarjetas Táctiles de Estudio (Con audio en cada Tiempo Verbal) -->
+        <div id="study-words-body" class="study-words-body">
+          <div class="study-helper-bar">
+            <span>🔊 <strong>Toca cualquier palabra o cualquiera de sus 4 tiempos verbales</strong> para escuchar su pronunciación en inglés:</span>
+            <span class="study-group-progress-badge" id="study-group-progress-label">0 / 10 aprendidas en este nivel</span>
+          </div>
+
+          <div class="study-cards-grid" id="study-cards-grid">
+            <!-- Las 10 tarjetas táctiles del nivel activo se renderizan aquí -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ARENA DE PRÁCTICA CONTINUA (MINIJUEGOS DEL NIVEL ACTIVO) -->
+      <div id="view-practice" class="stage-view">
+        <div class="arena-toolbar">
+          <div class="mode-pills" id="game-mode-selector">
+            <button class="mode-pill active" data-mode="mixed" title="Alterna automáticamente entre todos los minijuegos">
+              🎲 Circuito Mixto
+            </button>
+            <button class="mode-pill" data-mode="quiz">
+              ⚡ Selección Múltiple
+            </button>
+            <button class="mode-pill" data-mode="spelling">
+              ⌨️ Escritura (Spelling)
+            </button>
+            <button class="mode-pill" data-mode="flashcard">
+              🃏 Flashcards 3D
+            </button>
+          </div>
+
+          <div class="combo-badge" id="combo-indicator">
+            <span>COMBO</span>
+            <strong id="combo-count">x1</strong>
+          </div>
+        </div>
+
+        <!-- Barra de Progreso de la Ronda en el Nivel Actual -->
+        <div class="session-progress-bar">
+          <div class="session-track">
+            <div class="session-fill" id="session-progress-fill" style="width: 10%"></div>
+          </div>
+          <span class="session-counter" id="session-step-label">Palabra 1 / 10 del Nivel</span>
+        </div>
+
+        <!-- Contenedor Dinámico del Ejercicio -->
+        <div class="exercise-card" id="exercise-stage"></div>
+
+        <!-- Banda de Feedback Inmediato -->
+        <div class="feedback-banner hidden" id="feedback-banner">
+          <div class="feedback-content">
+            <div class="feedback-icon" id="feedback-icon">🎉</div>
+            <div class="feedback-text">
+              <h4 id="feedback-title">¡Excelente trabajo!</h4>
+              <p id="feedback-detail">Has ganado +20 XP</p>
+            </div>
+          </div>
+          <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
+            <button class="btn-3d btn-gold hidden" id="btn-advance-next-group">
+              🎉 ¡Pasar al Siguiente Nivel! ➔
+            </button>
+            <button class="btn-3d btn-primary" id="btn-next-question">
+              Siguiente Palabra ➔
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL PANTALLA COMPLETA: ¡SUBISTE DE NIVEL! -->
+  <div class="modal-overlay hidden" id="levelup-modal" role="dialog" aria-modal="true">
+    <div class="modal-card levelup-card">
+      <div class="levelup-medal" id="levelup-medal-icon">🏆</div>
+      <span class="levelup-kicker">¡NUEVO RANGO ALCANZADO!</span>
+      <h2 class="levelup-title" id="levelup-title-text">¡Subiste al Nivel 2!</h2>
+      <p class="levelup-subtitle" id="levelup-subtitle-text">Sigue así para dominar todas las ligas.</p>
+      <div class="levelup-rewards">
+        <div class="reward-chip">⚡ +50 XP Bono</div>
+        <div class="reward-chip">🔥 Racha Impulsada</div>
+      </div>
+      <button class="btn-3d btn-gold btn-large" id="btn-close-levelup">¡Seguir Jugando! 🚀</button>
+    </div>
+  </div>
+
+  <!-- MODAL DE PERFIL Y SIMULADOR DE RACHAS -->
+  <div class="modal-overlay hidden" id="profile-modal" role="dialog" aria-modal="true">
+    <div class="modal-card profile-card">
+      <div class="modal-header">
+        <h2>👤 Tu Perfil de Aventurero</h2>
+        <button class="btn-close-modal" id="btn-close-profile" aria-label="Cerrar">✕</button>
+      </div>
+
+      <div class="profile-form">
+        <label for="input-player-name">Tu Nombre o Apodo:</label>
+        <input type="text" id="input-player-name" maxlength="18" placeholder="Ej. Alex" />
+
+        <label>Elige tu Avatar:</label>
+        <div class="avatar-grid" id="avatar-selector">
+          <button type="button" class="avatar-option active" data-avatar="🦊">🦊</button>
+          <button type="button" class="avatar-option" data-avatar="🥷">🥷</button>
+          <button type="button" class="avatar-option" data-avatar="🤖">🤖</button>
+          <button type="button" class="avatar-option" data-avatar="🐉">🐉</button>
+          <button type="button" class="avatar-option" data-avatar="🧙‍♀️">🧙‍♀️</button>
+          <button type="button" class="avatar-option" data-avatar="🚀">🚀</button>
+        </div>
+
+        <button class="btn-3d btn-primary btn-full" id="btn-save-profile">Guardar Cambios</button>
+      </div>
+
+      <hr class="modal-divider" />
+
+      <div class="debug-tools">
+        <h3>🧪 Laboratorio de Pruebas (Rachas y Persistencia)</h3>
+        <p class="debug-note">Usa estos botones para verificar cómo reacciona el sistema cuando practicas días seguidos o cuando dejas pasar un día sin practicar:</p>
+        <div class="debug-actions">
+          <button class="btn-3d btn-secondary" id="btn-sim-next-day">
+            📅 Simular "Ayer Practiqué" (+1 Día Racha)
+          </button>
+          <button class="btn-3d btn-danger" id="btn-sim-missed-day">
+            🧊 Simular "Dejé de Practicar 2 Días" (Apagar Fuego)
+          </button>
+          <button class="btn-3d btn-outline" id="btn-reset-data">
+            🗑️ Reiniciar Progreso (localStorage)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Base de datos completa con las 2,000 palabras divididas en las 6 ligas -->
+  <script src="words_db.js"></script>
+  <!-- Lógica principal de gamificación y estudio por niveles -->
+  <script src="app.js"></script>
+</body>
+</html>
