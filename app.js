@@ -559,11 +559,11 @@ function renderStudyByLevelsSection() {
                   !isMastered
                     ? 'Jugar esta palabra para ganar +20 XP'
                     : isReviewedToday
-                      ? 'Ya cobraste el repaso de hoy (0 XP extra)'
-                      : 'Repasar esta palabra para ganar +10 XP'
+                      ? 'Repasar palabra (ya obtuviste los +10 XP de repaso hoy)'
+                      : 'Repasar esta palabra (+10 XP la primera vez del día)'
                 }"
               >
-                ${!isMastered ? '🎯 Jugar' : isReviewedToday ? '✅ Repasada' : '🔁 Repasar'}
+                ${!isMastered ? '🎯 Jugar' : '🔁 Repasar'}
               </button>
             </div>
           </div>
@@ -1062,7 +1062,7 @@ function renderFlashcardExercise(wordObj, levelInLeague) {
           !isAlreadyMastered
             ? '👑 ¡Ya me la sé! (+20 XP)'
             : isReviewedToday
-              ? '✅ Ya repasada hoy (0 XP)'
+              ? '🔁 Completar repaso (0 XP)'
               : '🔁 Completar repaso (+10 XP)'
         }
       </button>
