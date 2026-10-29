@@ -585,28 +585,40 @@ function renderStudyByLevelsSection() {
   // Eventos de audio individual para cada uno de los 4 tiempos verbales
   bindTenseAudioButtons(gridEl);
 
-  // Centrar automáticamente la tarjeta de la palabra activa dentro del carrusel de estudio
-  const activeStudyCard = gridEl.querySelector('.study-word-card.active-study-card');
-  if (activeStudyCard) {
-    const cardLeft = activeStudyCard.offsetLeft - gridEl.clientWidth / 2 + activeStudyCard.clientWidth / 2;
-    gridEl.scrollTo({ left: Math.max(0, cardLeft), behavior: 'smooth' });
-  }
-
-  // Evento para saltar a practicar esa palabra en la Arena
+  // Evento para abrir el Modal de Juego / Repaso en la palabra seleccionada
   gridEl.querySelectorAll('[data-practice-idx]').forEach(btn => {
     btn.addEventListener('click', () => {
       const idx = Number(btn.getAttribute('data-practice-idx'));
-      sessionState.wordIndexInGroup = idx;
-      loadExerciseForCurrentGroupWord();
-      document.getElementById('view-practice').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      openPracticeModal(idx);
     });
   });
+}
 
-  // Mostrar/ocultar el grid de tarjetas de estudio
-  const studyBody = document.getElementById('study-words-body');
-  const toggleBtn = document.getElementById('btn-toggle-study-grid');
-  studyBody.classList.toggle('hidden', !appState.studyGridOpen);
-  toggleBtn.textContent = appState.studyGridOpen ? '🙈 Ocultar Palabras' : '👀 Ver las 10 Palabras';
+function openPracticeModal(wordIdx = null) {
+  if (wordIdx !== null) {
+    sessionState.wordIndexInGroup = wordIdx;
+  } else {
+    const groupWords = getWordsByGroup(appState.selectedGroup);
+    const firstPendingIdx = groupWords.findIndex(w => !appState.masteredWords.includes(w.id));
+    sessionState.wordIndexInGroup = firstPendingIdx !== -1 ? firstPendingIdx : 0;
+  }
+
+  loadExerciseForCurrentGroupWord();
+  const modal = document.getElementById('practice-modal');
+  if (modal) {
+    modal.classList.remove('hidden');
+  }
+}
+
+function closePracticeModal() {
+  const modal = document.getElementById('practice-modal');
+  if (modal) {
+    modal.classList.add('hidden');
+  }
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+  }
+  renderStudyByLevelsSection();
 }
 
 /* ============================================================================
@@ -1276,11 +1288,36 @@ function initEvents() {
     selectGroup(appState.selectedGroup + 1);
   });
 
-  // Mostrar / Ocultar las 10 tarjetas de estudio del nivel
-  document.getElementById('btn-toggle-study-grid').addEventListener('click', () => {
-    appState.studyGridOpen = !appState.studyGridOpen;
-    saveState();
-    renderStudyByLevelsSection();
+  // Botón principal "🎮 Jugar Nivel" para abrir el Modal de Juego
+  const openModalBtn = document.getElementById('btn-open-practice-modal');
+  if (openModalBtn) {
+    openModalBtn.addEventListener('click', () => {
+      openPracticeModal();
+    });
+  }
+
+  // Botones para cerrar el Modal de Juego y volver al tablero de palabras
+  const closeModalBtn = document.getElementById('btn-close-practice-modal');
+  if (closeModalBtn) {
+    closeModalBtn.addEventListener('click', closePracticeModal);
+  }
+
+  const backToStudyBtn = document.getElementById('btn-back-to-study');
+  if (backToStudyBtn) {
+    backToStudyBtn.addEventListener('click', closePracticeModal);
+  }
+
+  const practiceModal = document.getElementById('practice-modal');
+  if (practiceModal) {
+    practiceModal.addEventListener('click', e => {
+      if (e.target === practiceModal) closePracticeModal();
+    });
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && practiceModal && !practiceModal.classList.contains('hidden')) {
+      closePracticeModal();
+    }
   });
 
   // Selector de Modo de Juego

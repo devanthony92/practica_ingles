@@ -182,8 +182,8 @@
             <button type="button" class="btn-3d btn-outline btn-sm" id="btn-next-level" title="Siguiente nivel">
               Siguiente ▶
             </button>
-            <button type="button" class="btn-3d btn-secondary btn-sm" id="btn-toggle-study-grid">
-              🙈 Ocultar Palabras
+            <button type="button" class="btn-3d btn-primary btn-sm" id="btn-open-practice-modal">
+              🎮 Jugar Nivel
             </button>
           </div>
         </div>
@@ -195,21 +195,36 @@
           </div>
         </div>
 
-        <!-- Contenedor Desplegable con las 10 Tarjetas Táctiles de Estudio (Con audio en cada Tiempo Verbal) -->
+        <!-- Contenedor Amplio con las 10 Tarjetas Táctiles de Estudio (Sin scroll lateral) -->
         <div id="study-words-body" class="study-words-body">
           <div class="study-helper-bar">
-            <span>🔊 <strong>Toca cualquier palabra o cualquiera de sus 4 tiempos verbales</strong> para escuchar su pronunciación en inglés:</span>
+            <span>🔊 <strong>Toca cualquier palabra o cualquiera de sus 4 tiempos verbales</strong> para escuchar su pronunciación, o pulsa <strong>Jugar / Repasar</strong> para abrir el minijuego:</span>
             <span class="study-group-progress-badge" id="study-group-progress-label">0 / 10 aprendidas en este nivel</span>
           </div>
 
           <div class="study-cards-grid" id="study-cards-grid">
-            <!-- Las 10 tarjetas táctiles del nivel activo se renderizan aquí -->
+            <!-- Las 10 tarjetas táctiles del nivel activo se renderizan aquí en cuadrícula amplia -->
           </div>
         </div>
       </section>
+    </section>
+  </main>
 
-      <!-- ARENA DE PRÁCTICA CONTINUA (MINIJUEGOS DEL NIVEL ACTIVO) -->
-      <div id="view-practice" class="stage-view">
+  <!-- MODAL DE JUEGO Y REPASO (ARENA DE PRÁCTICA) -->
+  <div class="modal-overlay hidden" id="practice-modal" role="dialog" aria-modal="true" aria-labelledby="practice-modal-title">
+    <div class="modal-card practice-modal-card">
+      <div class="practice-modal-header">
+        <div class="practice-modal-title-row">
+          <h2 id="practice-modal-title">🎮 Arena de Juego y Repaso</h2>
+          <div class="practice-modal-header-right">
+            <div class="combo-badge" id="combo-indicator">
+              <span>COMBO</span>
+              <strong id="combo-count">x1</strong>
+            </div>
+            <button type="button" class="btn-close-modal" id="btn-close-practice-modal" aria-label="Cerrar juego" title="Volver al estudio (Esc)">✕</button>
+          </div>
+        </div>
+
         <div class="arena-toolbar">
           <div class="mode-pills" id="game-mode-selector">
             <button class="mode-pill active" data-mode="mixed" title="Alterna automáticamente entre todos los minijuegos">
@@ -225,45 +240,43 @@
               🃏 Flashcards 3D
             </button>
           </div>
-
-          <div class="combo-badge" id="combo-indicator">
-            <span>COMBO</span>
-            <strong id="combo-count">x1</strong>
-          </div>
-        </div>
-
-        <!-- Barra de Progreso de la Ronda en el Nivel Actual -->
-        <div class="session-progress-bar">
-          <div class="session-track">
-            <div class="session-fill" id="session-progress-fill" style="width: 10%"></div>
-          </div>
-          <span class="session-counter" id="session-step-label">Palabra 1 / 10 del Nivel</span>
-        </div>
-
-        <!-- Contenedor Dinámico del Ejercicio -->
-        <div class="exercise-card" id="exercise-stage"></div>
-
-        <!-- Banda de Feedback Inmediato -->
-        <div class="feedback-banner hidden" id="feedback-banner">
-          <div class="feedback-content">
-            <div class="feedback-icon" id="feedback-icon">🎉</div>
-            <div class="feedback-text">
-              <h4 id="feedback-title">¡Excelente trabajo!</h4>
-              <p id="feedback-detail">Has ganado +20 XP</p>
-            </div>
-          </div>
-          <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
-            <button class="btn-3d btn-gold hidden" id="btn-advance-next-group">
-              🎉 ¡Pasar al Siguiente Nivel! ➔
-            </button>
-            <button class="btn-3d btn-primary" id="btn-next-question">
-              Siguiente Palabra ➔
-            </button>
-          </div>
         </div>
       </div>
-    </section>
-  </main>
+
+      <!-- Barra de Progreso de la Ronda en el Nivel Actual -->
+      <div class="session-progress-bar">
+        <div class="session-track">
+          <div class="session-fill" id="session-progress-fill" style="width: 10%"></div>
+        </div>
+        <span class="session-counter" id="session-step-label">Palabra 1 / 10 del Nivel</span>
+      </div>
+
+      <!-- Contenedor Dinámico del Ejercicio -->
+      <div class="exercise-card" id="exercise-stage"></div>
+
+      <!-- Banda de Feedback Inmediato -->
+      <div class="feedback-banner hidden" id="feedback-banner">
+        <div class="feedback-content">
+          <div class="feedback-icon" id="feedback-icon">🎉</div>
+          <div class="feedback-text">
+            <h4 id="feedback-title">¡Excelente trabajo!</h4>
+            <p id="feedback-detail">Has ganado +20 XP</p>
+          </div>
+        </div>
+        <div class="feedback-actions">
+          <button type="button" class="btn-3d btn-outline" id="btn-back-to-study">
+            📚 Volver a las Palabras
+          </button>
+          <button type="button" class="btn-3d btn-gold hidden" id="btn-advance-next-group">
+            🎉 ¡Pasar al Siguiente Nivel! ➔
+          </button>
+          <button type="button" class="btn-3d btn-primary" id="btn-next-question">
+            Siguiente Palabra ➔
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- MODAL PANTALLA COMPLETA: ¡SUBISTE DE NIVEL! -->
   <div class="modal-overlay hidden" id="levelup-modal" role="dialog" aria-modal="true">
