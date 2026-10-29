@@ -263,7 +263,7 @@ function getDefaultState() {
     reviewedTodayWords: [],
     selectedTier: 'bronze',
     selectedGroup: 1,
-    selectedMode: 'mixed',
+    selectedMode: 'sentence',
     studyGridOpen: true
   };
 }
@@ -273,7 +273,7 @@ let sessionState = {
   combo: 1,
   wordIndexInGroup: 0,
   currentWord: null,
-  currentResolvedMode: 'quiz',
+  currentResolvedMode: 'sentence',
   answered: false
 };
 
@@ -284,6 +284,9 @@ function loadState() {
     const parsed = { ...getDefaultState(), ...JSON.parse(raw) };
     if (!Array.isArray(parsed.reviewedTodayWords)) {
       parsed.reviewedTodayWords = [];
+    }
+    if (!['sentence', 'quiz', 'spelling'].includes(parsed.selectedMode)) {
+      parsed.selectedMode = 'sentence';
     }
 
     if (!TIER_META[parsed.selectedTier]) {
@@ -522,7 +525,7 @@ function renderStudyByLevelsSection() {
     stripEl.scrollTo({ left: Math.max(0, targetLeft), behavior: 'smooth' });
   }
 
-  // 2. Renderizar las 10 Tarjetas Táctiles de Estudio del Nivel Actual (con audio en cada Tiempo Verbal)
+  // 2. Renderizar las 10 Tarjetas Táctiles de Estudio del Nivel Actual (con audio en cada Tiempo Verbal y apertura de Flashcard 3D)
   const reviewedSet = new Set(appState.reviewedTodayWords || []);
   const gridEl = document.getElementById('study-cards-grid');
   gridEl.innerHTML = groupWords
@@ -531,7 +534,11 @@ function renderStudyByLevelsSection() {
       const isReviewedToday = reviewedSet.has(w.id);
       const isCurrent = sessionState.currentWord && sessionState.currentWord.id === w.id;
       return `
-        <article class="study-word-card ${isCurrent ? 'active-study-card' : ''} ${isMastered ? 'mastered-study-card' : ''}">
+        <article
+          class="study-word-card ${isCurrent ? 'active-study-card' : ''} ${isMastered ? 'mastered-study-card' : ''}"
+          data-open-flashcard="${idx}"
+          title="Toca la tarjeta para ver la Flashcard 3D detallada de ${w.word}"
+        >
           <div class="study-card-top">
             <div class="study-word-icon">${w.emoji}</div>
             <div class="study-word-info">
@@ -550,6 +557,14 @@ function renderStudyByLevelsSection() {
                 title="Escuchar palabra: ${w.word}"
               >
                 🔊
+              </button>
+              <button
+                type="button"
+                class="btn-practice-word"
+                data-flashcard-btn="${idx}"
+                title="Ver Flashcard 3D detallada con oración de ejemplo"
+              >
+                🃏
               </button>
               <button
                 type="button"
@@ -577,7 +592,8 @@ function renderStudyByLevelsSection() {
 
   // Eventos de audio de la palabra principal en cada tarjeta
   gridEl.querySelectorAll('[data-speak-word]').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
       speakEnglish(btn.getAttribute('data-speak-word'), btn);
     });
   });
@@ -587,11 +603,165 @@ function renderStudyByLevelsSection() {
 
   // Evento para abrir el Modal de Juego / Repaso en la palabra seleccionada
   gridEl.querySelectorAll('[data-practice-idx]').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
       const idx = Number(btn.getAttribute('data-practice-idx'));
       openPracticeModal(idx);
     });
   });
+
+  // Evento para abrir el Modal de Estudio (Flashcard 3D) al tocar la tarjeta o el botón 🃏
+  gridEl.querySelectorAll('[data-flashcard-btn]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const idx = Number(btn.getAttribute('data-flashcard-btn'));
+      openFlashcardStudyModal(idx);
+    });
+  });
+
+  gridEl.querySelectorAll('[data-open-flashcard]').forEach(card => {
+    card.addEventListener('click', () => {
+      const idx = Number(card.getAttribute('data-open-flashcard'));
+      openFlashcardStudyModal(idx);
+    });
+  });
+}
+
+function openFlashcardStudyModal(wordIdx = 0) {
+  const groupWords = getWordsByGroup(appState.selectedGroup);
+  if (groupWords.length === 0) return;
+
+  sessionState.wordIndexInGroup = Math.max(0, Math.min(groupWords.length - 1, Number(wordIdx)));
+  sessionState.currentWord = groupWords[sessionState.wordIndexInGroup];
+
+  renderStudyFlashcardInModal();
+  renderStudyByLevelsSection();
+
+  const modal = document.getElementById('flashcard-modal');
+  if (modal) {
+    modal.classList.remove('hidden');
+  }
+}
+
+function closeFlashcardStudyModal() {
+  const modal = document.getElementById('flashcard-modal');
+  if (modal) {
+    modal.classList.add('hidden');
+  }
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+  }
+}
+
+function renderStudyFlashcardInModal() {
+  const groupWords = getWordsByGroup(appState.selectedGroup);
+  if (groupWords.length === 0) return;
+
+  const idx = sessionState.wordIndexInGroup;
+  const wordObj = groupWords[idx];
+  sessionState.currentWord = wordObj;
+
+  const meta = TIER_META[appState.selectedTier];
+  const levelInLeague = appState.selectedGroup - meta.minGroup + 1;
+  const isAlreadyMastered = appState.masteredWords.includes(wordObj.id);
+
+  const counterEl = document.getElementById('flashcard-modal-counter');
+  if (counterEl) {
+    counterEl.textContent = `Palabra ${idx + 1} de ${groupWords.length} · Nivel ${levelInLeague} (${meta.shortName})`;
+  }
+
+  const stage = document.getElementById('flashcard-modal-stage');
+  if (!stage) return;
+
+  stage.innerHTML = `
+    <div class="flashcard-scene" id="flashcard-scene">
+      <div class="flashcard-3d" id="flashcard-3d">
+        <div class="flashcard-face flashcard-front">
+          ${renderAnimeArtPlaceholder(wordObj)}
+          <div style="flex:1; display:flex; flex-direction:column; gap:0.65rem; min-width:0;">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+              <span class="flip-hint-pill">🔄 Toca la tarjeta para girarla en 3D y ver sus Tiempos Verbales</span>
+              ${isAlreadyMastered ? '<span class="word-rank-badge">👑 Aprendida</span>' : ''}
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <button type="button" class="btn-audio-tts" id="btn-tts-flash" title="Escuchar palabra">🔊</button>
+              <div>
+                <h3 class="showcase-main-word" style="font-size:2rem;">${wordObj.word}</h3>
+                <span class="showcase-phonetic">${wordObj.pronunciation}</span>
+              </div>
+            </div>
+            <p style="font-size:1.15rem; font-weight:800; color:var(--text-main);">Significado: <span style="color:var(--sapphire-dark);">${wordObj.meaning}</span></p>
+            <div class="flashcard-example-box">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:0.5rem;">
+                <p class="showcase-example" style="color:var(--text-main); font-style:normal; font-weight:800;">"${wordObj.exampleEn}"</p>
+                <button type="button" class="btn-3d btn-outline btn-sm" id="btn-tts-flash-sentence" title="Escuchar oración completa">🔊 Oración</button>
+              </div>
+              <p style="font-size:0.84rem; font-weight:700; color:var(--text-muted); margin-top:4px;">ES: "${wordObj.exampleEs || ''}"</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flashcard-face flashcard-back">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+            <h4 style="font-family:var(--font-display); font-size:1.15rem; color:var(--diamond-dark);">
+              🔊 Toca cada Tiempo Verbal para escuchar su pronunciación:
+            </h4>
+            <span class="flip-hint-pill">🔄 Volver al frente</span>
+          </div>
+
+          <div class="tenses-grid">
+            <button type="button" class="tense-box" data-speak-tense="${wordObj.tenses.present.replace(/"/g, '&quot;')}">
+              <span class="tense-label">🔊 Presente</span>
+              <span class="tense-value">${wordObj.tenses.present}</span>
+            </button>
+            <button type="button" class="tense-box" data-speak-tense="${wordObj.tenses.past.replace(/"/g, '&quot;')}">
+              <span class="tense-label">🔊 Pasado</span>
+              <span class="tense-value">${wordObj.tenses.past}</span>
+            </button>
+            <button type="button" class="tense-box" data-speak-tense="${wordObj.tenses.participle.replace(/"/g, '&quot;')}">
+              <span class="tense-label">🔊 Participio</span>
+              <span class="tense-value">${wordObj.tenses.participle}</span>
+            </button>
+            <button type="button" class="tense-box" data-speak-tense="${wordObj.tenses.gerund.replace(/"/g, '&quot;')}">
+              <span class="tense-label">🔊 Gerundio (-ing)</span>
+              <span class="tense-value">${wordObj.tenses.gerund}</span>
+            </button>
+          </div>
+
+          <p style="margin-top:0.85rem; font-weight:800; color:var(--text-muted); text-align:center;">
+            💡 "${wordObj.exampleEn}" — ${wordObj.exampleEs || ''}
+          </p>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const scene = document.getElementById('flashcard-scene');
+  const card3d = document.getElementById('flashcard-3d');
+  const ttsBtn = document.getElementById('btn-tts-flash');
+  const ttsSentenceBtn = document.getElementById('btn-tts-flash-sentence');
+
+  ttsBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    speakEnglish(wordObj.word);
+  });
+
+  ttsSentenceBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    speakEnglish(wordObj.exampleEn);
+  });
+
+  bindTenseAudioButtons(stage);
+
+  scene.addEventListener('click', () => {
+    SoundFX.flip();
+    card3d.classList.toggle('is-flipped');
+  });
+
+  const practiceBtn = document.getElementById('btn-practice-from-flashcard');
+  if (practiceBtn) {
+    practiceBtn.textContent = isAlreadyMastered ? '🔁 Repasar esta palabra' : '🎯 Jugar esta palabra';
+  }
 }
 
 function openPracticeModal(wordIdx = null) {
@@ -759,20 +929,136 @@ function loadExerciseForCurrentGroupWord() {
 
   renderStudyByLevelsSection();
 
-  if (appState.selectedMode === 'mixed') {
-    const modes = ['quiz', 'spelling', 'flashcard'];
-    sessionState.currentResolvedMode = modes[sessionState.wordIndexInGroup % modes.length];
+  if (!['sentence', 'quiz', 'spelling'].includes(appState.selectedMode)) {
+    appState.selectedMode = 'sentence';
+  }
+  sessionState.currentResolvedMode = appState.selectedMode;
+
+  document.querySelectorAll('#game-mode-selector .mode-pill').forEach(p => {
+    p.classList.toggle('active', p.getAttribute('data-mode') === sessionState.currentResolvedMode);
+  });
+
+  if (sessionState.currentResolvedMode === 'sentence') {
+    renderSentenceExercise(sessionState.currentWord, groupWords, levelInLeague);
+  } else if (sessionState.currentResolvedMode === 'quiz') {
+    renderQuizExercise(sessionState.currentWord, groupWords, levelInLeague);
   } else {
-    sessionState.currentResolvedMode = appState.selectedMode;
+    renderSpellingExercise(sessionState.currentWord, levelInLeague);
+  }
+}
+
+/* ---------------- MINIJUEGO 1: COMPLETAR ORACIÓN (USO EN CONTEXTO) ---------------- */
+function renderSentenceExercise(wordObj, groupWords, levelInLeague) {
+  const stage = document.getElementById('exercise-stage');
+  const targetWordLower = wordObj.word.trim().toLowerCase();
+  const rawSentence = wordObj.exampleEn || `I like to ${targetWordLower} with my friends.`;
+  const spanishTranslation = wordObj.exampleEs || `Significado de la palabra: "${wordObj.meaning}"`;
+
+  // Reemplazar la palabra objetivo por un espacio en blanco visual dentro de la oración
+  const escapedWord = targetWordLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const wordRegex = new RegExp(`\\b${escapedWord}\\b`, 'i');
+  let maskedSentenceHTML = '';
+  if (wordRegex.test(rawSentence)) {
+    maskedSentenceHTML = rawSentence.replace(
+      wordRegex,
+      '<span class="sentence-blank" id="sentence-blank-slot">_______</span>'
+    );
+  } else {
+    maskedSentenceHTML = `${rawSentence} (<span class="sentence-blank" id="sentence-blank-slot">_______</span>)`;
   }
 
-  if (sessionState.currentResolvedMode === 'quiz') {
-    renderQuizExercise(sessionState.currentWord, groupWords, levelInLeague);
-  } else if (sessionState.currentResolvedMode === 'spelling') {
-    renderSpellingExercise(sessionState.currentWord, levelInLeague);
-  } else {
-    renderFlashcardExercise(sessionState.currentWord, levelInLeague);
-  }
+  const distractors = groupWords
+    .filter(w => w.id !== wordObj.id)
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 3)
+    .map(w => w.word.toLowerCase());
+
+  const options = [targetWordLower, ...distractors].sort(() => Math.random() - 0.5);
+
+  const isAlreadyMastered = appState.masteredWords.includes(wordObj.id);
+  const isReviewedToday = (appState.reviewedTodayWords || []).includes(wordObj.id);
+  const headerBadgeText = !isAlreadyMastered
+    ? TIER_META[wordObj.tier].name
+    : isReviewedToday
+      ? '👑 Ya repasada hoy (0 XP)'
+      : '👑 Modo Repaso (+10 XP)';
+
+  stage.innerHTML = `
+    <div class="exercise-header">
+      <span class="exercise-badge">📝 Completar Oración · Nivel ${levelInLeague}</span>
+      <span class="word-rank-badge">${headerBadgeText}</span>
+    </div>
+
+    <div class="exercise-body">
+      ${renderAnimeArtPlaceholder(wordObj)}
+
+      <div class="question-zone">
+        <h3 class="prompt-instruction">Completa la oración en inglés con la palabra que significa <span style="color:var(--sapphire-dark)">"${wordObj.meaning}"</span>:</h3>
+
+        <div class="word-showcase">
+          <div class="sentence-builder-box">
+            <p class="sentence-english-text" id="sentence-english-display">
+              "${maskedSentenceHTML}"
+            </p>
+            <p class="sentence-spanish-hint">
+              🇪🇸 Traducción: <em>"${spanishTranslation}"</em>
+            </p>
+          </div>
+        </div>
+
+        <div class="options-grid">
+          ${options
+            .map(
+              (opt, idx) => `
+            <button class="option-btn" data-answer="${opt.replace(/"/g, '&quot;')}">
+              <span class="option-key">${idx + 1}</span>
+              <span>${opt}</span>
+            </button>
+          `
+            )
+            .join('')}
+        </div>
+      </div>
+    </div>
+  `;
+
+  const optionBtns = stage.querySelectorAll('.option-btn');
+  optionBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (sessionState.answered) return;
+      sessionState.answered = true;
+
+      const selected = btn.getAttribute('data-answer');
+      const isCorrect = selected === targetWordLower;
+
+      optionBtns.forEach(b => {
+        b.disabled = true;
+        if (b.getAttribute('data-answer') === targetWordLower) b.classList.add('correct');
+      });
+
+      const blankSlot = document.getElementById('sentence-blank-slot');
+      if (blankSlot) {
+        blankSlot.textContent = targetWordLower;
+        blankSlot.classList.add(isCorrect ? 'filled-correct' : 'filled-wrong');
+      }
+
+      speakEnglish(rawSentence);
+
+      if (isCorrect) {
+        btn.classList.add('correct');
+        handleCorrectAnswer(
+          wordObj,
+          `¡Oración completa! "${rawSentence}" (${wordObj.word} = ${wordObj.meaning})`
+        );
+      } else {
+        btn.classList.add('wrong');
+        handleWrongAnswer(
+          wordObj,
+          `La palabra correcta era "${targetWordLower}": "${rawSentence}"`
+        );
+      }
+    });
+  });
 }
 
 /* ---------------- MINIJUEGO 1: SELECCIÓN MÚLTIPLE ---------------- */
@@ -996,143 +1282,6 @@ function renderSpellingExercise(wordObj, levelInLeague) {
   });
 }
 
-/* ---------------- MINIJUEGO 3: TARJETAS DE MEMORIA 3D (FLASHCARDS) ---------------- */
-function renderFlashcardExercise(wordObj, levelInLeague) {
-  const stage = document.getElementById('exercise-stage');
-  const isAlreadyMastered = appState.masteredWords.includes(wordObj.id);
-  const isReviewedToday = (appState.reviewedTodayWords || []).includes(wordObj.id);
-  const headerBadgeText = !isAlreadyMastered
-    ? TIER_META[wordObj.tier].name
-    : isReviewedToday
-      ? '👑 Ya repasada hoy (0 XP)'
-      : '👑 Modo Repaso (+10 XP)';
-
-  stage.innerHTML = `
-    <div class="exercise-header">
-      <span class="exercise-badge">🃏 Flashcard 3D · Nivel ${levelInLeague}</span>
-      <span class="word-rank-badge">${headerBadgeText}</span>
-    </div>
-
-    <div class="flashcard-scene" id="flashcard-scene">
-      <div class="flashcard-3d" id="flashcard-3d">
-        <div class="flashcard-face flashcard-front">
-          ${renderAnimeArtPlaceholder(wordObj)}
-          <div style="flex:1; display:flex; flex-direction:column; gap:0.65rem;">
-            <span class="flip-hint-pill">🔄 Haz clic en la tarjeta para girarla en 3D y escuchar sus Tiempos Verbales</span>
-            <div style="display:flex; align-items:center; gap:0.75rem;">
-              <button class="btn-audio-tts" id="btn-tts-flash" title="Escuchar pronunciación">🔊</button>
-              <div>
-                <h3 class="showcase-main-word" style="font-size:2rem;">${wordObj.word}</h3>
-                <span class="showcase-phonetic">${wordObj.pronunciation}</span>
-              </div>
-            </div>
-            <p style="font-size:1.12rem; font-weight:800; color:var(--text-main);">Significado: ${wordObj.meaning}</p>
-            <p class="showcase-example">"${wordObj.exampleEn}"</p>
-          </div>
-        </div>
-
-        <div class="flashcard-face flashcard-back">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
-            <h4 style="font-family:var(--font-display); font-size:1.15rem; color:var(--diamond-dark);">
-              🔊 Toca cada Tiempo Verbal para escuchar su pronunciación:
-            </h4>
-            <span class="flip-hint-pill">🔄 Volver</span>
-          </div>
-
-          <div class="tenses-grid">
-            <button type="button" class="tense-box" data-speak-tense="${wordObj.tenses.present.replace(/"/g, '&quot;')}">
-              <span class="tense-label">🔊 Presente</span>
-              <span class="tense-value">${wordObj.tenses.present}</span>
-            </button>
-            <button type="button" class="tense-box" data-speak-tense="${wordObj.tenses.past.replace(/"/g, '&quot;')}">
-              <span class="tense-label">🔊 Pasado</span>
-              <span class="tense-value">${wordObj.tenses.past}</span>
-            </button>
-            <button type="button" class="tense-box" data-speak-tense="${wordObj.tenses.participle.replace(/"/g, '&quot;')}">
-              <span class="tense-label">🔊 Participio</span>
-              <span class="tense-value">${wordObj.tenses.participle}</span>
-            </button>
-            <button type="button" class="tense-box" data-speak-tense="${wordObj.tenses.gerund.replace(/"/g, '&quot;')}">
-              <span class="tense-label">🔊 Gerundio (-ing)</span>
-              <span class="tense-value">${wordObj.tenses.gerund}</span>
-            </button>
-          </div>
-
-          <p style="margin-top:0.85rem; font-weight:800; color:var(--text-muted); text-align:center;">
-            💡 "${wordObj.exampleEn}"
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <div class="flashcard-actions">
-      <button class="btn-3d btn-outline" id="btn-flash-review">
-        🔁 Repasar (${isReviewedToday ? '0 XP' : '+10 XP'})
-      </button>
-      <button class="btn-3d btn-primary" id="btn-flash-master">
-        ${
-          !isAlreadyMastered
-            ? '👑 ¡Ya me la sé! (+20 XP)'
-            : isReviewedToday
-              ? '🔁 Completar repaso (0 XP)'
-              : '🔁 Completar repaso (+10 XP)'
-        }
-      </button>
-    </div>
-  `;
-
-  const scene = document.getElementById('flashcard-scene');
-  const card3d = document.getElementById('flashcard-3d');
-  const ttsBtn = document.getElementById('btn-tts-flash');
-
-  ttsBtn.addEventListener('click', e => {
-    e.stopPropagation();
-    speakEnglish(wordObj.word);
-  });
-
-  bindTenseAudioButtons(stage);
-
-  scene.addEventListener('click', () => {
-    SoundFX.flip();
-    card3d.classList.toggle('is-flipped');
-  });
-
-  document.getElementById('btn-flash-review').addEventListener('click', () => {
-    if (sessionState.answered) return;
-    sessionState.answered = true;
-    registerDailyPractice();
-    SoundFX.flip();
-    card3d.classList.add('is-flipped');
-    document.getElementById('btn-advance-next-group').classList.add('hidden');
-
-    if (!appState.reviewedTodayWords.includes(wordObj.id)) {
-      appState.reviewedTodayWords.push(wordObj.id);
-      awardXP(10);
-      renderStudyByLevelsSection();
-      showFeedbackBanner(
-        true,
-        '🔁 ¡Buen repaso! (+10 XP)',
-        'Ganaste +10 XP por repasar esta palabra hoy.'
-      );
-    } else {
-      showFeedbackBanner(
-        true,
-        '🔁 ¡Repaso completado! (Ya recibiste los +10 XP de hoy)',
-        'Revisa sus 4 tiempos verbales y pasa a otra palabra para seguir sumando XP.'
-      );
-    }
-  });
-
-  document.getElementById('btn-flash-master').addEventListener('click', () => {
-    if (sessionState.answered) return;
-    sessionState.answered = true;
-    handleCorrectAnswer(
-      wordObj,
-      `¡Palabra aprendida! (${wordObj.tenses.present} → ${wordObj.tenses.past} → ${wordObj.tenses.participle})`
-    );
-  });
-}
-
 /* ============================================================================
    8. RESOLUCIÓN DE RESPUESTAS Y AVANCE DE NIVEL
    ============================================================================ */
@@ -1314,9 +1463,56 @@ function initEvents() {
     });
   }
 
+  // Eventos del Modal de Estudio Detallado: Flashcard 3D
+  const flashcardModal = document.getElementById('flashcard-modal');
+  const closeFlashcardBtn = document.getElementById('btn-close-flashcard-modal');
+  if (closeFlashcardBtn) {
+    closeFlashcardBtn.addEventListener('click', closeFlashcardStudyModal);
+  }
+  if (flashcardModal) {
+    flashcardModal.addEventListener('click', e => {
+      if (e.target === flashcardModal) closeFlashcardStudyModal();
+    });
+  }
+
+  const prevFlashcardBtn = document.getElementById('btn-prev-flashcard');
+  if (prevFlashcardBtn) {
+    prevFlashcardBtn.addEventListener('click', () => {
+      const groupWords = getWordsByGroup(appState.selectedGroup);
+      const total = groupWords.length || 10;
+      sessionState.wordIndexInGroup = (sessionState.wordIndexInGroup - 1 + total) % total;
+      renderStudyFlashcardInModal();
+      renderStudyByLevelsSection();
+    });
+  }
+
+  const nextFlashcardBtn = document.getElementById('btn-next-flashcard');
+  if (nextFlashcardBtn) {
+    nextFlashcardBtn.addEventListener('click', () => {
+      const groupWords = getWordsByGroup(appState.selectedGroup);
+      const total = groupWords.length || 10;
+      sessionState.wordIndexInGroup = (sessionState.wordIndexInGroup + 1) % total;
+      renderStudyFlashcardInModal();
+      renderStudyByLevelsSection();
+    });
+  }
+
+  const practiceFromFlashcardBtn = document.getElementById('btn-practice-from-flashcard');
+  if (practiceFromFlashcardBtn) {
+    practiceFromFlashcardBtn.addEventListener('click', () => {
+      const currentIdx = sessionState.wordIndexInGroup;
+      closeFlashcardStudyModal();
+      openPracticeModal(currentIdx);
+    });
+  }
+
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && practiceModal && !practiceModal.classList.contains('hidden')) {
-      closePracticeModal();
+    if (e.key === 'Escape') {
+      if (flashcardModal && !flashcardModal.classList.contains('hidden')) {
+        closeFlashcardStudyModal();
+      } else if (practiceModal && !practiceModal.classList.contains('hidden')) {
+        closePracticeModal();
+      }
     }
   });
 

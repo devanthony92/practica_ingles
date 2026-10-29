@@ -778,6 +778,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
+  cursor: pointer;
   transition: all 0.2s var(--transition-bounce);
 }
 
@@ -1645,8 +1646,9 @@ body {
   animation: popBounce 0.45s var(--transition-bounce);
 }
 
-/* Modal de Juego y Repaso */
-.practice-modal-card {
+/* Modal de Juego y Repaso & Modal de Estudio (Flashcard 3D) */
+.practice-modal-card,
+.flashcard-study-modal-card {
   max-width: 820px;
   width: 100%;
   max-height: 92vh;
@@ -1655,6 +1657,67 @@ body {
   background: #f4f7fe;
   border: 3px solid var(--border-color);
   box-shadow: 0 16px 36px rgba(15, 23, 42, 0.38);
+}
+
+.flashcard-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.flashcard-example-box {
+  background: var(--surface-soft);
+  border: 2px dashed var(--border-color);
+  border-radius: 14px;
+  padding: 0.65rem 0.85rem;
+}
+
+/* Ejercicio de Completar Oración */
+.sentence-builder-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sentence-english-text {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.45;
+}
+
+.sentence-spanish-hint {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--text-muted);
+}
+
+.sentence-blank {
+  display: inline-block;
+  padding: 2px 12px;
+  margin: 0 3px;
+  border-radius: 10px;
+  background: var(--sapphire-soft);
+  border: 2px dashed var(--sapphire);
+  color: var(--sapphire-dark);
+  font-weight: 800;
+  transition: all 0.2s ease;
+}
+
+.sentence-blank.filled-correct {
+  background: var(--emerald-soft);
+  border: 2px solid var(--emerald);
+  color: var(--emerald-dark);
+}
+
+.sentence-blank.filled-wrong {
+  background: var(--danger-soft);
+  border: 2px solid var(--danger);
+  color: var(--danger-dark);
 }
 
 .practice-modal-header {

@@ -198,7 +198,7 @@
         <!-- Contenedor Amplio con las 10 Tarjetas Táctiles de Estudio (Sin scroll lateral) -->
         <div id="study-words-body" class="study-words-body">
           <div class="study-helper-bar">
-            <span>🔊 <strong>Toca cualquier palabra o cualquiera de sus 4 tiempos verbales</strong> para escuchar su pronunciación, o pulsa <strong>Jugar / Repasar</strong> para abrir el minijuego:</span>
+            <span>🃏 <strong>Toca cualquier tarjeta</strong> para abrir su <strong>Flashcard 3D de Estudio</strong> detallada, los botones 🔊 para escuchar cada tiempo verbal, o <strong>Jugar / Repasar</strong> para evaluarte:</span>
             <span class="study-group-progress-badge" id="study-group-progress-label">0 / 10 aprendidas en este nivel</span>
           </div>
 
@@ -209,6 +209,37 @@
       </section>
     </section>
   </main>
+
+  <!-- MODAL DE ESTUDIO DETALLADO: FLASHCARD 3D -->
+  <div class="modal-overlay hidden" id="flashcard-modal" role="dialog" aria-modal="true" aria-labelledby="flashcard-modal-title">
+    <div class="modal-card flashcard-study-modal-card">
+      <div class="practice-modal-header">
+        <div class="practice-modal-title-row">
+          <div style="display:flex; align-items:center; gap:0.55rem; flex-wrap:wrap;">
+            <h2 id="flashcard-modal-title">🃏 Flashcard 3D de Estudio</h2>
+            <span class="subtitle-tag" id="flashcard-modal-counter">Palabra 1 de 10</span>
+          </div>
+          <button type="button" class="btn-close-modal" id="btn-close-flashcard-modal" aria-label="Cerrar flashcard" title="Cerrar (Esc)">✕</button>
+        </div>
+      </div>
+
+      <!-- Escenario de la Flashcard 3D de Estudio -->
+      <div id="flashcard-modal-stage"></div>
+
+      <!-- Controles de Navegación del Estudio -->
+      <div class="flashcard-modal-footer">
+        <button type="button" class="btn-3d btn-outline" id="btn-prev-flashcard">
+          ◀ Anterior
+        </button>
+        <button type="button" class="btn-3d btn-primary" id="btn-practice-from-flashcard">
+          🎯 Practicar esta palabra
+        </button>
+        <button type="button" class="btn-3d btn-outline" id="btn-next-flashcard">
+          Siguiente ▶
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- MODAL DE JUEGO Y REPASO (ARENA DE PRÁCTICA) -->
   <div class="modal-overlay hidden" id="practice-modal" role="dialog" aria-modal="true" aria-labelledby="practice-modal-title">
@@ -227,17 +258,14 @@
 
         <div class="arena-toolbar">
           <div class="mode-pills" id="game-mode-selector">
-            <button class="mode-pill active" data-mode="mixed" title="Alterna automáticamente entre todos los minijuegos">
-              🎲 Circuito Mixto
+            <button class="mode-pill active" data-mode="sentence" title="Completa la oración en inglés usando la palabra correcta">
+              📝 Completar Oración
             </button>
-            <button class="mode-pill" data-mode="quiz">
+            <button class="mode-pill" data-mode="quiz" title="Elige el significado o tiempo verbal correcto">
               ⚡ Selección Múltiple
             </button>
-            <button class="mode-pill" data-mode="spelling">
+            <button class="mode-pill" data-mode="spelling" title="Escribe la palabra en inglés">
               ⌨️ Escritura (Spelling)
-            </button>
-            <button class="mode-pill" data-mode="flashcard">
-              🃏 Flashcards 3D
             </button>
           </div>
         </div>
