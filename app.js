@@ -812,9 +812,6 @@ function renderQuizExercise(wordObj, groupWords, levelInLeague) {
             </div>
             <p class="showcase-example">"${wordObj.exampleEn}"</p>
           </div>
-
-          <!-- Botones para escuchar cada tiempo verbal directamente -->
-          ${renderTensesAudioButtonsHTML(wordObj.tenses, 'inline-tenses-audio-bar')}
         </div>
 
         <div class="options-grid">
@@ -899,8 +896,6 @@ function renderSpellingExercise(wordObj, levelInLeague) {
               <p class="showcase-example" style="margin-top:4px;">Empieza con "${targetWord[0].toUpperCase()}" (${targetWord.length} letras)</p>
             </div>
           </div>
-
-          ${renderTensesAudioButtonsHTML(wordObj.tenses, 'inline-tenses-audio-bar')}
         </div>
 
         <div class="spelling-box">
