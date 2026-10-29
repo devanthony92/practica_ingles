@@ -260,6 +260,7 @@ function getDefaultState() {
     questsDate: getTodayISO(),
     dailyQuests: createDefaultQuests(),
     masteredWords: [],
+    reviewedTodayWords: [],
     selectedTier: 'bronze',
     selectedGroup: 1,
     selectedMode: 'mixed',
@@ -281,6 +282,9 @@ function loadState() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return getDefaultState();
     const parsed = { ...getDefaultState(), ...JSON.parse(raw) };
+    if (!Array.isArray(parsed.reviewedTodayWords)) {
+      parsed.reviewedTodayWords = [];
+    }
 
     if (!TIER_META[parsed.selectedTier]) {
       parsed.selectedTier = 'bronze';
@@ -293,6 +297,7 @@ function loadState() {
     if (parsed.questsDate !== today) {
       parsed.questsDate = today;
       parsed.dailyQuests = createDefaultQuests();
+      parsed.reviewedTodayWords = [];
     }
 
     evaluateStreakOnStartup(parsed);
@@ -518,10 +523,12 @@ function renderStudyByLevelsSection() {
   }
 
   // 2. Renderizar las 10 Tarjetas Táctiles de Estudio del Nivel Actual (con audio en cada Tiempo Verbal)
+  const reviewedSet = new Set(appState.reviewedTodayWords || []);
   const gridEl = document.getElementById('study-cards-grid');
   gridEl.innerHTML = groupWords
     .map((w, idx) => {
       const isMastered = masteredSet.has(w.id);
+      const isReviewedToday = reviewedSet.has(w.id);
       const isCurrent = sessionState.currentWord && sessionState.currentWord.id === w.id;
       return `
         <article class="study-word-card ${isCurrent ? 'active-study-card' : ''} ${isMastered ? 'mastered-study-card' : ''}">
@@ -548,9 +555,15 @@ function renderStudyByLevelsSection() {
                 type="button"
                 class="btn-practice-word ${isMastered ? 'is-review-mode' : ''}"
                 data-practice-idx="${idx}"
-                title="${isMastered ? 'Palabra ya aprendida: practicar en modo repaso (sin XP extra)' : 'Jugar esta palabra para ganar XP'}"
+                title="${
+                  !isMastered
+                    ? 'Jugar esta palabra para ganar +20 XP'
+                    : isReviewedToday
+                      ? 'Ya cobraste el repaso de hoy (0 XP extra)'
+                      : 'Repasar esta palabra para ganar +10 XP'
+                }"
               >
-                ${isMastered ? '🔁 Repasar' : '🎯 Jugar'}
+                ${!isMastered ? '🎯 Jugar' : isReviewedToday ? '✅ Repasada' : '🔁 Repasar'}
               </button>
             </div>
           </div>
@@ -790,11 +803,17 @@ function renderQuizExercise(wordObj, groupWords, levelInLeague) {
 
   const options = [correctAnswer, ...distractors].sort(() => Math.random() - 0.5);
   const isAlreadyMastered = appState.masteredWords.includes(wordObj.id);
+  const isReviewedToday = (appState.reviewedTodayWords || []).includes(wordObj.id);
+  const headerBadgeText = !isAlreadyMastered
+    ? TIER_META[wordObj.tier].name
+    : isReviewedToday
+      ? '👑 Ya repasada hoy (0 XP)'
+      : '👑 Modo Repaso (+10 XP)';
 
   stage.innerHTML = `
     <div class="exercise-header">
       <span class="exercise-badge">⚡ Selección Múltiple · Nivel ${levelInLeague}</span>
-      <span class="word-rank-badge">${isAlreadyMastered ? '👑 Ya aprendida (Modo Repaso · 0 XP)' : TIER_META[wordObj.tier].name}</span>
+      <span class="word-rank-badge">${headerBadgeText}</span>
     </div>
 
     <div class="exercise-body">
@@ -875,11 +894,17 @@ function renderSpellingExercise(wordObj, levelInLeague) {
     .map((ch, idx) => `<span class="letter-slot">${idx === 0 ? ch.toUpperCase() : '_'}</span>`)
     .join('');
   const isAlreadyMastered = appState.masteredWords.includes(wordObj.id);
+  const isReviewedToday = (appState.reviewedTodayWords || []).includes(wordObj.id);
+  const headerBadgeText = !isAlreadyMastered
+    ? TIER_META[wordObj.tier].name
+    : isReviewedToday
+      ? '👑 Ya repasada hoy (0 XP)'
+      : '👑 Modo Repaso (+10 XP)';
 
   stage.innerHTML = `
     <div class="exercise-header">
       <span class="exercise-badge">⌨️ Escritura (Spelling) · Nivel ${levelInLeague}</span>
-      <span class="word-rank-badge">${isAlreadyMastered ? '👑 Ya aprendida (Modo Repaso · 0 XP)' : TIER_META[wordObj.tier].name}</span>
+      <span class="word-rank-badge">${headerBadgeText}</span>
     </div>
 
     <div class="exercise-body">
@@ -963,11 +988,17 @@ function renderSpellingExercise(wordObj, levelInLeague) {
 function renderFlashcardExercise(wordObj, levelInLeague) {
   const stage = document.getElementById('exercise-stage');
   const isAlreadyMastered = appState.masteredWords.includes(wordObj.id);
+  const isReviewedToday = (appState.reviewedTodayWords || []).includes(wordObj.id);
+  const headerBadgeText = !isAlreadyMastered
+    ? TIER_META[wordObj.tier].name
+    : isReviewedToday
+      ? '👑 Ya repasada hoy (0 XP)'
+      : '👑 Modo Repaso (+10 XP)';
 
   stage.innerHTML = `
     <div class="exercise-header">
       <span class="exercise-badge">🃏 Flashcard 3D · Nivel ${levelInLeague}</span>
-      <span class="word-rank-badge">${isAlreadyMastered ? '👑 Ya aprendida (Modo Repaso · 0 XP)' : TIER_META[wordObj.tier].name}</span>
+      <span class="word-rank-badge">${headerBadgeText}</span>
     </div>
 
     <div class="flashcard-scene" id="flashcard-scene">
@@ -1024,10 +1055,16 @@ function renderFlashcardExercise(wordObj, levelInLeague) {
 
     <div class="flashcard-actions">
       <button class="btn-3d btn-outline" id="btn-flash-review">
-        🔁 Repasar luego (0 XP)
+        🔁 Repasar (${isReviewedToday ? '0 XP' : '+10 XP'})
       </button>
       <button class="btn-3d btn-primary" id="btn-flash-master">
-        ${isAlreadyMastered ? '✅ Repaso completado (0 XP)' : '👑 ¡Ya me la sé! (+20 XP)'}
+        ${
+          !isAlreadyMastered
+            ? '👑 ¡Ya me la sé! (+20 XP)'
+            : isReviewedToday
+              ? '✅ Ya repasada hoy (0 XP)'
+              : '🔁 Completar repaso (+10 XP)'
+        }
       </button>
     </div>
   `;
@@ -1051,14 +1088,27 @@ function renderFlashcardExercise(wordObj, levelInLeague) {
   document.getElementById('btn-flash-review').addEventListener('click', () => {
     if (sessionState.answered) return;
     sessionState.answered = true;
+    registerDailyPractice();
     SoundFX.flip();
     card3d.classList.add('is-flipped');
     document.getElementById('btn-advance-next-group').classList.add('hidden');
-    showFeedbackBanner(
-      true,
-      '🔁 Marcada para repasar luego (0 XP)',
-      'Revisa sus 4 tiempos verbales y pasa a la siguiente palabra cuando estés listo.'
-    );
+
+    if (!appState.reviewedTodayWords.includes(wordObj.id)) {
+      appState.reviewedTodayWords.push(wordObj.id);
+      awardXP(10);
+      renderStudyByLevelsSection();
+      showFeedbackBanner(
+        true,
+        '🔁 ¡Buen repaso! (+10 XP)',
+        'Ganaste +10 XP por repasar esta palabra hoy.'
+      );
+    } else {
+      showFeedbackBanner(
+        true,
+        '🔁 ¡Repaso completado! (Ya recibiste los +10 XP de hoy)',
+        'Revisa sus 4 tiempos verbales y pasa a otra palabra para seguir sumando XP.'
+      );
+    }
   });
 
   document.getElementById('btn-flash-master').addEventListener('click', () => {
@@ -1078,7 +1128,12 @@ function handleCorrectAnswer(wordObj, detailMsg) {
   SoundFX.success();
   registerDailyPractice();
 
+  if (!Array.isArray(appState.reviewedTodayWords)) {
+    appState.reviewedTodayWords = [];
+  }
+
   const isFirstTimeMastered = !appState.masteredWords.includes(wordObj.id);
+  const canEarnReviewXP = !isFirstTimeMastered && !appState.reviewedTodayWords.includes(wordObj.id);
   let totalEarned = 0;
 
   if (isFirstTimeMastered) {
@@ -1094,8 +1149,13 @@ function handleCorrectAnswer(wordObj, detailMsg) {
     updateQuestProgress('q_words', 1);
     updateQuestProgress('q_flawless', 0, sessionState.combo);
     awardXP(totalEarned);
+  } else if (canEarnReviewXP) {
+    // Repasar una palabra aprendida otorga +10 XP (1 vez al día por palabra para evitar XP infinita)
+    appState.reviewedTodayWords.push(wordObj.id);
+    totalEarned = 10;
+    awardXP(totalEarned);
   } else {
-    // Si la palabra ya estaba aprendida, es solo un repaso y NO otorga XP ni infla combos/misiones
+    // Ya cobró el repaso de esta palabra hoy: 0 XP
     saveState();
     updateHUD();
   }
@@ -1113,8 +1173,10 @@ function handleCorrectAnswer(wordObj, detailMsg) {
       true,
       isFirstTimeMastered
         ? `🏆 ¡Completaste las 10 palabras de este Nivel! (+${totalEarned} XP)`
-        : '🔁 ¡Repaso completado! (Nivel ya dominado · 0 XP)',
-      '¡Excelente! Ya puedes avanzar al siguiente nivel.'
+        : canEarnReviewXP
+          ? `🔁 ¡Buen repaso! (+10 XP)`
+          : '🔁 ¡Repaso completado! (Ya recibiste los +10 XP de hoy en esta palabra)',
+      '¡Excelente! Ya puedes avanzar al siguiente nivel o repasar otra palabra.'
     );
   } else {
     advanceBtn.classList.add('hidden');
@@ -1124,11 +1186,17 @@ function handleCorrectAnswer(wordObj, detailMsg) {
         `¡Muy bien! +${totalEarned} XP (Combo x${sessionState.combo - 1})`,
         detailMsg
       );
+    } else if (canEarnReviewXP) {
+      showFeedbackBanner(
+        true,
+        `🔁 ¡Buen repaso! +10 XP`,
+        `${detailMsg} (1 repaso con XP al día por palabra)`
+      );
     } else {
       showFeedbackBanner(
         true,
-        '🔁 ¡Repaso completado! (Palabra ya aprendida · 0 XP)',
-        `${detailMsg} — Practica una palabra nueva sin corona (👑) para ganar más XP.`
+        '🔁 ¡Repaso completado! (0 XP · Ya repasaste esta palabra hoy)',
+        `${detailMsg} — Elige otra palabra para seguir ganando experiencia.`
       );
     }
   }
@@ -1297,10 +1365,12 @@ function initEvents() {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     appState.lastPracticeDate = yesterday.toISOString().slice(0, 10);
+    appState.reviewedTodayWords = [];
     if (appState.streakCount === 0) appState.streakCount = 1;
     registerDailyPractice();
     launchConfetti(60);
     updateHUD();
+    loadExerciseForCurrentGroupWord();
     profileModal.classList.add('hidden');
   });
 
